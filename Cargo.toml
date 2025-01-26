@@ -1,0 +1,16 @@
+[package]
+name = "hikoru-ucdb"
+version = "0.1.0"
+edition = "2021"
+build = "build/main.rs"
+
+[package.metadata.ucd]
+version = "16.0.0"
+url = "https://www.unicode.org/Public"
+
+[dependencies]
+
+[build-dependencies]
+reqwest = { version = "0.12", features = ["blocking"] }
+cargo_metadata = { version = "0.19" }
+
