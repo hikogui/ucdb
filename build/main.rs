@@ -15,9 +15,9 @@ fn main() {
     let root = db.root_package().unwrap();
     let ucd_version = root.metadata["ucd"]["version"].as_str().unwrap();
     let ucd_url = root.metadata["ucd"]["url"].as_str().unwrap();
-    let data_dir = manifest_dir.join("data");
+    let data_dir = std::path::Path::new(&manifest_dir).join("data");
 
-    if let Err(e) = ucd_generator(ucd_url, ucd_version, data_dir) {
+    if let Err(e) = ucd_generator(ucd_url, ucd_version, &data_dir) {
         println!("cargo::error={}", e);
     }
 }

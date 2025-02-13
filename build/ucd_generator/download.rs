@@ -1,11 +1,12 @@
 
+use std::io::Seek;
 
-fn download_and_open_file(url: &str, path: &std::path::Path) -> Result<io::File, String> {
+pub fn download_and_open_file(url: &str, path: &std::path::Path) -> Result<std::fs::File, String> {
     if std::fs::exists(&path).unwrap_or(false) {
         // File already exists, no need to download.
-        match io::File::open(&path) {
-            Err(e) => return Err(format_err("Could not open file:  {}", &e)),
-            Ok(f)  => return f,
+        match std::fs::File::open(&path) {
+            Err(e) => return Err(format!("Could not open file: {}", &e)),
+            Ok(f)  => return Ok(f),
         };
     }
 
@@ -42,10 +43,10 @@ fn download_and_open_file(url: &str, path: &std::path::Path) -> Result<io::File,
     }
 
     // Go to the first byte of the file, so that we can start reading from it.
-    if let Err(e) = out_file.seek(SeekFrom::Start(0)) {
+    if let Err(e) = out_file.seek(std::io::SeekFrom::Start(0)) {
         return Err(format!("Could not seek file:  {:?}:  {}", &path, e));
     }
 
-    return out_file;
+    return Ok(out_file);
 }
 
