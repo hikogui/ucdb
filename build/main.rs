@@ -2,7 +2,10 @@
 extern crate cargo_metadata;
 
 mod ucd_download;
+mod ucd_generator;
+
 use ucd_download::*;
+use ucd_generator::*;
 
 fn main() {
     let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
@@ -20,5 +23,8 @@ fn main() {
         println!("cargo::error={}", e);
     }
 
+    if let Err(e) = ucd_generator(ucd_version) {
+        println!("cargo::error={}", e);
+    }
 }
 
