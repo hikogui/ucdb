@@ -14,6 +14,12 @@ pub fn ucd_generator(ucd_base_url: &str, ucd_version: &str, data_dir: &std::path
         return Err(e);
     }
 
+    //if let Err(e) = parse_line_break_properties(&ucd_base_url, &ucd_version, &data_dir, &mut code_point_descriptions) {
+    //    return Err(e);
+    //}
+
+
+
     return Ok(());
 }
 

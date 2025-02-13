@@ -9,12 +9,6 @@ use regex::Regex;
 pub fn parse_east_asian_width(ucd_base_url: &str, ucd_version: &str, data_dir: &std::path::Path, descriptions : &mut Vec<CodePointDescription>)
     -> Result<(), String>
 {
-    let url = format!("{}/{}/ucd/EastAsianWidth.txt", &ucd_base_url, &ucd_version);
-    let path = data_dir.join(&ucd_version).join("ucd").join("EastAsianWidth.txt");
-
-    let file = download::download_and_open_file(&url, &path)?;
-    let reader = std::io::BufReader::new(file);
-
     let missing_re = match Regex::new(r"^#\s*@missing:\s*([0-9a-fA-F]+)\.\.([0-9a-fA-F]+)\s*;\s*([a-zA-Z]+)") {
         Ok(x) => x,
         Err(e) => return Err(format!("Error creating regex: {}", e)),
@@ -30,7 +24,11 @@ pub fn parse_east_asian_width(ucd_base_url: &str, ucd_version: &str, data_dir: &
         Err(e) => return Err(format!("Error creating regex:  {}", e)),
     };
 
+    let url = format!("{}/{}/ucd/EastAsianWidth.txt", &ucd_base_url, &ucd_version);
+    let path = data_dir.join(&ucd_version).join("ucd").join("EastAsianWidth.txt");
 
+    let file = download::download_and_open_file(&url, &path)?;
+    let reader = std::io::BufReader::new(file);
     for line_result in reader.lines() {
         let line = match line_result {
             Ok(x) => x,
@@ -62,7 +60,6 @@ pub fn parse_east_asian_width(ucd_base_url: &str, ucd_version: &str, data_dir: &
                 descriptions[cp].east_asian_width = cap[2].to_string();
             }
         }
-
     }
 
     return Ok(());
