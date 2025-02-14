@@ -4,6 +4,7 @@ use code_point_description::*;
 mod parse_east_asian_width;
 use parse_east_asian_width::*;
 mod download;
+mod column;
 
 pub fn ucd_generator(ucd_base_url: &str, ucd_version: &str, data_dir: &std::path::Path) -> Result<(), String> {
 
