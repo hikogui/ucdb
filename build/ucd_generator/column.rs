@@ -27,7 +27,7 @@ fn test_chunk(column: &Vec<usize>, a: usize, b: usize, chunk_size: usize) -> boo
     let b_offset = b * chunk_size;
 
     for i in 0..chunk_size {
-        if column[a_offset + i] != column[b_offset + 1] {
+        if column[a_offset + i] != column[b_offset + i] {
             return false;
         }
     }
