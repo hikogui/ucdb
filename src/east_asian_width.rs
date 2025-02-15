@@ -307,6 +307,9 @@ pub const fn get_east_asian_width(code_point: char) -> EastAsianWidth
     let column_offset = (index * EAST_ASIAN_WIDTH_CHUNK_SIZE + code_point_lo) * EAST_ASIAN_WIDTH_COLUMN_BITS;
     let column_byte_offset = column_offset / 8;
     let column_bit_offset = column_offset % 8;
+
+    // Explicitly assert to replace a double bound check with single bound check.
+    assert!(column_byte_offset + 1 < EAST_ASIAN_WIDTH_COLUMN.len());
     let mut value: usize = 0;
     value |= (EAST_ASIAN_WIDTH_COLUMN[column_byte_offset + 0] as usize) << 0;
     value |= (EAST_ASIAN_WIDTH_COLUMN[column_byte_offset + 1] as usize) << 8;

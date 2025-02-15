@@ -93,7 +93,9 @@ pub fn generate_enum_table(code_dir : &std::path::Path, name : &str, enum_values
 
     write!(fd, "    let column_offset = (index * {}_CHUNK_SIZE + code_point_lo) * {}_COLUMN_BITS;\n", upper_name, upper_name)?;
     write!(fd, "    let column_byte_offset = column_offset / 8;\n")?;
-    write!(fd, "    let column_bit_offset = column_offset % 8;\n")?;
+    write!(fd, "    let column_bit_offset = column_offset % 8;\n\n")?;
+    write!(fd, "    // Explicitly assert to replace a double bound check with single bound check.\n")?;
+    write!(fd, "    assert!(column_byte_offset + 1 < {}_COLUMN.len());\n", upper_name)?;
     write!(fd, "    let mut value: usize = 0;\n")?;
     let column_bytes_to_read = (column_bits + 7) / 8 + 1;
     for i in 0..column_bytes_to_read {
