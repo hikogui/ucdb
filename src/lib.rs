@@ -1,14 +1,14 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+
+pub mod east_asian_width;
+
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+    fn east_asian_width() {
+        assert_eq!(east_asian_width::get_east_asian_width('a'), east_asian_width::EastAsianWidth::Na);
+        assert_eq!(east_asian_width::get_east_asian_width('あ'), east_asian_width::EastAsianWidth::W);
     }
 }

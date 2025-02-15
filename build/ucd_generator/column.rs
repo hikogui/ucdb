@@ -154,7 +154,7 @@ fn compress_insert_value(bytes: &mut Vec<u8>, offset : usize, mut value : usize)
 pub fn compress(input: &Vec<usize>, num_bits: usize) -> Vec<u8>
 {
     let total_num_bits = num_bits * input.len();
-    let total_num_bytes = (total_num_bits + 7) / num_bits;
+    let total_num_bytes = (total_num_bits + 7) / 8;
 
     let mut r = Vec::<u8>::with_capacity(total_num_bytes + 7);
     r.resize(total_num_bytes + 7, 0);

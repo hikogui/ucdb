@@ -1,52 +1,43 @@
 
 use std::io::Seek;
+use thiserror::Error;
 
-pub fn download_and_open_file(url: &str, path: &std::path::Path) -> Result<std::fs::File, String> {
+#[derive(Error, Debug)]
+pub enum Error {
+    #[error("Failed to write")]
+    IO(#[from] std::io::Error),
+    #[error("Failed to download")]
+    Download(#[from] reqwest::Error),
+    #[error("Failed to get file from server")]
+    BadStatus(reqwest::StatusCode),
+}
+
+pub fn download_and_open_file(url: &str, path: &std::path::Path) -> Result<std::fs::File, Error> {
     if std::fs::exists(&path).unwrap_or(false) {
         // File already exists, no need to download.
-        match std::fs::File::open(&path) {
-            Err(e) => return Err(format!("Could not open file: {}", &e)),
-            Ok(f)  => return Ok(f),
-        };
+        let fd = std::fs::File::open(&path)?;
+        return Ok(fd);
     }
 
     if let Some(dir) = path.parent() {
         // Create the dir that the file is downloaded in.
         if !std::fs::exists(&dir).unwrap_or(false) {
-            if let Err(e) = std::fs::create_dir_all(&dir) {
-                return Err(format!("Could not create directory hierarchy {:?}: {}", &dir, e));
-            }
+            std::fs::create_dir_all(&dir)?;
         }
     }
 
-    let response = match reqwest::blocking::get(url) {
-        Err(e) => return Err(format!("Could not request download: {}: {}", &url, e)),
-        Ok(x) => x,
-    };
-
+    let response = reqwest::blocking::get(url)?;
     if !response.status().is_success() {
-        return Err(format!("Could not download: {}: {}", &url, response.status()));
+        return Err(Error::BadStatus(response.status()));
     }
 
-    let body = match response.text() {
-        Err(e) => return Err(format!("Could not get body when downloading: {}: {}", &url, e)),
-        Ok(x) => x,
-    };
+    let body = response.text()?;
 
-    let mut out_file = match std::fs::File::create_new(&path) {
-        Err(e) => return Err(format!("Could not create file: {:?}: {}", &path, e)),
-        Ok(x) => x,
-    };
-
-    if let Err(e) = std::io::copy(&mut body.as_bytes(), &mut out_file) {
-        return Err(format!("Could not copy data to file: {:?}: {}", &path, e));
-    }
+    let mut fd = std::fs::File::create_new(&path)?;
+    std::io::copy(&mut body.as_bytes(), &mut fd)?;
 
     // Go to the first byte of the file, so that we can start reading from it.
-    if let Err(e) = out_file.seek(std::io::SeekFrom::Start(0)) {
-        return Err(format!("Could not seek file:  {:?}:  {}", &path, e));
-    }
-
-    return Ok(out_file);
+    fd.seek(std::io::SeekFrom::Start(0))?;
+    return Ok(fd);
 }
 

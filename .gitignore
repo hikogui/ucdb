@@ -1,2 +1,3 @@
 data/
 target/
+src/east_asian_width.rs
