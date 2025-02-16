@@ -283,7 +283,7 @@ pub enum EastAsianWidth {
 ///
 /// # Returns
 /// A EastAsianWidth attribute of the Unicode code-point.
-pub const fn get_east_asian_width(code_point: char) -> EastAsianWidth
+#[must_use] pub const fn get_east_asian_width(code_point: char) -> EastAsianWidth
 {
     const INDEX_MASK : usize = (1 << EAST_ASIAN_WIDTH_INDEX_BITS) - 1;
     const COLUMN_MASK : usize = (1 << EAST_ASIAN_WIDTH_COLUMN_BITS) - 1;
@@ -299,8 +299,8 @@ pub const fn get_east_asian_width(code_point: char) -> EastAsianWidth
     let index_byte_offset = index_offset / 8;
     let index_bit_offset = index_offset % 8;
     let mut index: usize = 0;
-    index |= (EAST_ASIAN_WIDTH_INDEX[index_byte_offset + 0] as usize) << 0;
     index |= (EAST_ASIAN_WIDTH_INDEX[index_byte_offset + 1] as usize) << 8;
+    index |= (EAST_ASIAN_WIDTH_INDEX[index_byte_offset + 0] as usize) << 0;
     index >>= index_bit_offset;
     index &= INDEX_MASK;
 
@@ -308,11 +308,9 @@ pub const fn get_east_asian_width(code_point: char) -> EastAsianWidth
     let column_byte_offset = column_offset / 8;
     let column_bit_offset = column_offset % 8;
 
-    // Explicitly assert to replace a double bound check with single bound check.
-    assert!(column_byte_offset + 1 < EAST_ASIAN_WIDTH_COLUMN.len());
     let mut value: usize = 0;
-    value |= (EAST_ASIAN_WIDTH_COLUMN[column_byte_offset + 0] as usize) << 0;
     value |= (EAST_ASIAN_WIDTH_COLUMN[column_byte_offset + 1] as usize) << 8;
+    value |= (EAST_ASIAN_WIDTH_COLUMN[column_byte_offset + 0] as usize) << 0;
     value >>= column_bit_offset;
     value &= COLUMN_MASK;
 
