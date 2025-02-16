@@ -10,24 +10,29 @@
 ///  - `dst_chunk`: The index to the chunk where the data will be copied to.
 ///  - `src_chunk`: The index to the chunk where the data will be copied from.
 ///  - `chunk_size`: The size of the chunks.
-/// 
-fn copy_chunk(column: &mut Vec<usize>, dst_chunk: usize, src_chunk: usize, chunk_size: usize)
+///
+fn copy_chunk(src: &Vec<usize>, src_chunk: usize, dst: &mut Vec<usize>, dst_chunk: usize, chunk_size: usize)
 {
     let dst_offset = dst_chunk * chunk_size;
     let src_offset = src_chunk * chunk_size;
 
+    let dst_size = dst_offset + chunk_size;
+    if dst.len() < dst_size {
+        dst.resize(dst_size, 0);
+    }
+
     for i in 0..chunk_size {
-        column[dst_offset + i] = column[src_offset + i];
+        dst[dst_offset + i] = src[src_offset + i];
     }
 }
 
-fn test_chunk(column: &Vec<usize>, a: usize, b: usize, chunk_size: usize) -> bool
+fn test_chunk(src: &Vec<usize>, src_chunk: usize, dst: &Vec<usize>, dst_chunk: usize, chunk_size: usize) -> bool
 {
-    let a_offset = a * chunk_size;
-    let b_offset = b * chunk_size;
+    let src_offset = src_chunk * chunk_size;
+    let dst_offset = dst_chunk * chunk_size;
 
     for i in 0..chunk_size {
-        if column[a_offset + i] != column[b_offset + i] {
+        if dst[dst_offset + i] != src[src_offset + i] {
             return false;
         }
     }
@@ -38,11 +43,12 @@ fn test_chunk(column: &Vec<usize>, a: usize, b: usize, chunk_size: usize) -> boo
 /// `src_chunk`.
 /// 
 /// # Arguments
-///  - `column`: The vector to deduplicate.
+///  - `src': The data source.
+///  - `src_chunk`: The chunk-index to the source-chunk.
+///  - `dst`: The deduplicated table.
 ///  - `dst_chunk`: The chunk-index to the destination-chunk where the
 ///                 source-chunk will be copied to; if all chunks from
 ///                 `0..dst_chunk` are unequal to source-chunk.
-///  - `src_chunk`: The chunk-index to the source-chunk.
 ///  - `chunk_size`: The size of the chunks.
 /// 
 /// # Returns
@@ -52,11 +58,11 @@ fn test_chunk(column: &Vec<usize>, a: usize, b: usize, chunk_size: usize) -> boo
 /// The `dst_chunk` is returned so that you can directly copy the source-chunk
 /// to the correct position.
 /// 
-fn test_chunks(column: &Vec<usize>, dst_chunk: usize, src_chunk: usize, chunk_size: usize) -> usize
+fn test_chunks(src: &Vec<usize>, src_chunk: usize, dst: &Vec<usize>, dst_chunk: usize, chunk_size: usize) -> usize
 {
-    for a_chunk in 0..dst_chunk {
-        if test_chunk(column, a_chunk, src_chunk, chunk_size) {
-            return a_chunk;
+    for i in 0..dst_chunk {
+        if test_chunk(src, src_chunk, dst, i, chunk_size) {
+            return i;
         }
     }
     return dst_chunk;
@@ -69,31 +75,29 @@ fn test_chunks(column: &Vec<usize>, dst_chunk: usize, src_chunk: usize, chunk_si
 ///  - `chunk_size` : The size of the chunks.
 /// 
 /// # Returns
-/// The index-table.
+/// (dedupped-data-table, index-table).
 /// 
 /// To find a specific entry `i` in the deduplicated column:
 ///  - `chunk_nr = min(i / chunk_size, index_table.len())`
 ///  - `offset = index_table[chunk_nr] * chunk_size + i % chunk_size`
 ///  - `entry = column[offset]`
 /// 
-pub fn dedup(column: &mut Vec<usize>, chunk_size: usize) -> Vec<usize>
+pub fn dedup(column: &Vec<usize>, chunk_size: usize) -> (Vec<usize>, Vec<usize>)
 {
     let num_chunks = 0x110000 / chunk_size;
     let mut index_table = Vec::<usize>::new();
+    let mut dedup_table = Vec::<usize>::new();
 
     // Deduplicating the column table and create an index table.
     let mut dst_chunk = 0;
     for src_chunk in 0..num_chunks {
-        let found_chunk = test_chunks(column, dst_chunk, src_chunk, chunk_size);
+        let found_chunk = test_chunks(column, src_chunk, &dedup_table, dst_chunk, chunk_size);
         index_table.push(found_chunk);
         if found_chunk == dst_chunk {
-            copy_chunk(column, dst_chunk, src_chunk, chunk_size);
+            copy_chunk(column, src_chunk, &mut dedup_table, dst_chunk, chunk_size);
             dst_chunk += 1;
         }
     }
-
-    // Truncate the column, after deduplicating the column.
-    column.truncate(dst_chunk * chunk_size);
 
     // Truncate the index_table, so that the last value is not repeating.
     if let Some(&last_value) = index_table.last() {
@@ -112,7 +116,42 @@ pub fn dedup(column: &mut Vec<usize>, chunk_size: usize) -> Vec<usize>
         index_table.push(last_value);
     }
 
-    return index_table;
+    return (dedup_table, index_table);
+}
+
+pub fn dedup_best_fit(column: &Vec<usize>) -> (Vec<usize>, usize, Vec<usize>, usize, usize)
+{
+    let chunk_sizes = vec![
+        32 as usize,
+        64 as usize,
+        128 as usize,
+        256 as usize,
+        512 as usize,
+    ];
+
+    let mut best_chunk_size: usize = 0;
+    let mut best_dedup = Vec::<usize>::new();
+    let mut best_index = Vec::<usize>::new();
+    let mut best_dedup_bits: usize = 0;
+    let mut best_index_bits: usize = 0;
+    let mut best_byte_len: usize = 0;
+    for chunk_size in chunk_sizes {
+        let (dedup, index) = dedup(&column, chunk_size);
+        let dedup_bits = get_width(&dedup);
+        let index_bits = get_width(&index);
+
+        let byte_len = dedup.len() * dedup_bits + index.len() * index_bits;
+        if best_byte_len == 0 || byte_len < best_byte_len {
+            best_chunk_size = chunk_size;
+            best_dedup = dedup;
+            best_index = index;
+            best_dedup_bits = dedup_bits;
+            best_index_bits = index_bits;
+            best_byte_len = byte_len;
+        }
+    }
+
+    return (best_dedup, best_dedup_bits, best_index, best_index_bits, best_chunk_size);
 }
 
 pub fn map_str_to_int<'a>(order: &mut Vec<String>, op: impl Fn(usize) -> &'a String) -> Vec<usize>
@@ -166,3 +205,8 @@ pub fn compress(input: &Vec<usize>, num_bits: usize) -> Vec<u8>
     return r;
 }
 
+pub fn get_width(input: &Vec<usize>) -> usize
+{
+    let max = *input.iter().max().unwrap_or(&0);
+    return (max + 1).next_power_of_two().trailing_zeros() as usize;
+}
