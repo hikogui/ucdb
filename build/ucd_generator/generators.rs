@@ -25,6 +25,10 @@ pub fn generate_enum_table(code_dir : &std::path::Path, name : &str, enum_values
     let column_bytes = column::compress(column, column_bits);
     let index_bytes = column::compress(index, index_bits);
 
+    // These are the number of bytes to read to read a value in a single read instruction.
+    let index_bytes_to_read = ((index_bits + 7) / 8 + 1).next_power_of_two();
+    let column_bytes_to_read = ((column_bits + 7) / 8 + 1).next_power_of_two();
+
     let code_path = code_dir.join(format!("{}.rs", &name));
     let mut fd = std::fs::File::create(&code_path)?;
 
@@ -36,20 +40,25 @@ pub fn generate_enum_table(code_dir : &std::path::Path, name : &str, enum_values
     write!(fd, "const {}_INDEX_BITS : usize = {};\n\n", upper_name, index_bits)?;
     write!(fd, "const {}_INDEX_BYTE_OFFSET : usize = {};\n\n", upper_name, column_bytes.len())?;
 
-    write!(fd, "const {}_DATA: [u8; {}] = [\n", upper_name, column_bytes.len() + index_bytes.len())?;
+    let data_bytes_len = column_bytes.len() + index_bytes.len() + index_bytes_to_read - 1;
+    write!(fd, "const {}_DATA: [u8; {}] = [\n", upper_name, data_bytes_len)?;
     write!(fd, "    // Column table")?;
     for (i, v) in column_bytes.iter().enumerate() {
         if i % 32 == 0 {
-            write!(fd, "\n     ")?;
+            write!(fd, "\n    ")?;
         }
         write!(fd, "{:3},", v)?;
     }
     write!(fd, "\n    // Index table")?;
     for (i, v) in index_bytes.iter().enumerate() {
         if i % 32 == 0 {
-            write!(fd, "\n     ")?;
+            write!(fd, "\n    ")?;
         }
         write!(fd, "{:3},", v)?;
+    }
+    write!(fd, "\n    // Padding to handle unaligned word reads.\n    ")?;
+    for _ in 1..index_bytes_to_read {
+        write!(fd, "{:3},", 0)?;
     }
     write!(fd, "\n];\n\n")?;
 
@@ -84,7 +93,6 @@ pub fn generate_enum_table(code_dir : &std::path::Path, name : &str, enum_values
     write!(fd, "    let index_byte_offset = index_offset / 8;\n")?;
     write!(fd, "    let index_bit_offset = index_offset % 8;\n")?;
     write!(fd, "    let mut index: usize = 0;\n")?;
-    let index_bytes_to_read = (index_bits + 7) / 8 + 1;
     for i in (0..index_bytes_to_read).rev() {
         write!(fd, "    index |= ({}_DATA[{}_INDEX_BYTE_OFFSET + index_byte_offset + {}] as usize) << {};\n", upper_name, upper_name, i, i * 8)?;
     }
@@ -96,7 +104,6 @@ pub fn generate_enum_table(code_dir : &std::path::Path, name : &str, enum_values
     write!(fd, "    let column_bit_offset = column_offset % 8;\n\n")?;
 
     write!(fd, "    let mut value: usize = 0;\n")?;
-    let column_bytes_to_read = (column_bits + 7) / 8 + 1;
     for i in (0..column_bytes_to_read).rev() {
         write!(fd, "    value |= ({}_DATA[column_byte_offset + {}] as usize) << {};\n", upper_name, i, i * 8)?;
     }
@@ -107,7 +114,7 @@ pub fn generate_enum_table(code_dir : &std::path::Path, name : &str, enum_values
     for (i, v) in enum_values.iter().enumerate() {
         write!(fd, "        {} => {}::{},\n", i, camel_name, v)?;
     }
-    write!(fd, "        _ => panic!(\"Invalid value.\")\n")?;
+    write!(fd, "        _ => {}::{},\n", camel_name, enum_values[0])?;
     write!(fd, "    }};\n")?;
     write!(fd, "}}\n\n")?;
 

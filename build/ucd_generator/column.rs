@@ -149,15 +149,13 @@ fn compress_insert_value(bytes: &mut Vec<u8>, offset : usize, mut value : usize)
 
 /// Compress and integer tables into tightly packed bytes.
 ///
-/// The byte array will end in 7 zero bytes, to be able to
-/// do unaligned reads without running beyond the bounds.
 pub fn compress(input: &Vec<usize>, num_bits: usize) -> Vec<u8>
 {
     let total_num_bits = num_bits * input.len();
     let total_num_bytes = (total_num_bits + 7) / 8;
 
-    let mut r = Vec::<u8>::with_capacity(total_num_bytes + 7);
-    r.resize(total_num_bytes + 7, 0);
+    let mut r = Vec::<u8>::with_capacity(total_num_bytes);
+    r.resize(total_num_bytes, 0);
 
     let mut offset : usize = 0;
     for x in input {
@@ -167,3 +165,4 @@ pub fn compress(input: &Vec<usize>, num_bits: usize) -> Vec<u8>
 
     return r;
 }
+
