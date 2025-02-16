@@ -3,7 +3,6 @@ name = "hikoru-ucdb"
 version = "0.1.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
-build = "build/main.rs"
 
 [package.metadata.ucd]
 version = "16.0.0"

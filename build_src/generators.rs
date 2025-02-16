@@ -1,4 +1,4 @@
-use crate::ucd_generator::column;
+use crate::build_src::column;
 use convert_case::{Case, Casing};
 use std::io::Write;
 use thiserror::Error;

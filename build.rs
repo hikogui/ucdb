@@ -1,8 +1,7 @@
 
 extern crate cargo_metadata;
 
-mod ucd_generator;
-use ucd_generator::*;
+mod build_src;
 
 fn main() {
     let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
@@ -18,7 +17,7 @@ fn main() {
     let data_dir = std::path::Path::new(&manifest_dir).join("data");
     let code_dir = std::path::Path::new(&manifest_dir).join("src");
 
-    if let Err(e) = ucd_generator(ucd_url, ucd_version, &data_dir, &code_dir) {
+    if let Err(e) = build_src::build(ucd_url, ucd_version, &data_dir, &code_dir) {
         println!("cargo::error={}", e);
     }
 }

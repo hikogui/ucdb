@@ -41,7 +41,7 @@ fn generate_enum_table<'a>(
     return Ok(());
 }
 
-pub fn ucd_generator(
+pub fn build(
     ucd_base_url: &str,
     ucd_version: &str,
     data_dir: &std::path::Path,

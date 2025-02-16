@@ -1,6 +1,6 @@
 
-use crate::ucd_generator::CodePointDescription;
-use crate::ucd_generator::download;
+use crate::build_src::CodePointDescription;
+use crate::build_src::download;
 use std::io::BufRead;
 use regex::Regex;
 use thiserror::Error;
