@@ -34,17 +34,17 @@ pub fn generate_enum_table(code_dir : &std::path::Path, name : &str, enum_values
     write!(fd, "const {}_COLUMN_BITS : usize = {};\n", upper_name, column_bits)?;
     write!(fd, "const {}_INDEX_LEN : usize = {};\n", upper_name, index.len())?;
     write!(fd, "const {}_INDEX_BITS : usize = {};\n\n", upper_name, index_bits)?;
+    write!(fd, "const {}_INDEX_BYTE_OFFSET : usize = {};\n\n", upper_name, column_bytes.len())?;
 
-    write!(fd, "const {}_COLUMN: [u8; {}] = [", upper_name, column_bytes.len())?;
+    write!(fd, "const {}_DATA: [u8; {}] = [\n", upper_name, column_bytes.len() + index_bytes.len())?;
+    write!(fd, "    // Column table")?;
     for (i, v) in column_bytes.iter().enumerate() {
         if i % 32 == 0 {
             write!(fd, "\n     ")?;
         }
         write!(fd, "{:3},", v)?;
     }
-    write!(fd, "\n];\n\n")?;
-
-    write!(fd, "const {}_INDEX: [u8; {}] = [", upper_name, index_bytes.len())?;
+    write!(fd, "\n    // Index table")?;
     for (i, v) in index_bytes.iter().enumerate() {
         if i % 32 == 0 {
             write!(fd, "\n     ")?;
@@ -86,7 +86,7 @@ pub fn generate_enum_table(code_dir : &std::path::Path, name : &str, enum_values
     write!(fd, "    let mut index: usize = 0;\n")?;
     let index_bytes_to_read = (index_bits + 7) / 8 + 1;
     for i in (0..index_bytes_to_read).rev() {
-        write!(fd, "    index |= ({}_INDEX[index_byte_offset + {}] as usize) << {};\n", upper_name, i, i * 8)?;
+        write!(fd, "    index |= ({}_DATA[{}_INDEX_BYTE_OFFSET + index_byte_offset + {}] as usize) << {};\n", upper_name, upper_name, i, i * 8)?;
     }
     write!(fd, "    index >>= index_bit_offset;\n")?;
     write!(fd, "    index &= INDEX_MASK;\n\n")?;
@@ -98,7 +98,7 @@ pub fn generate_enum_table(code_dir : &std::path::Path, name : &str, enum_values
     write!(fd, "    let mut value: usize = 0;\n")?;
     let column_bytes_to_read = (column_bits + 7) / 8 + 1;
     for i in (0..column_bytes_to_read).rev() {
-        write!(fd, "    value |= ({}_COLUMN[column_byte_offset + {}] as usize) << {};\n", upper_name, i, i * 8)?;
+        write!(fd, "    value |= ({}_DATA[column_byte_offset + {}] as usize) << {};\n", upper_name, i, i * 8)?;
     }
     write!(fd, "    value >>= column_bit_offset;\n")?;
     write!(fd, "    value &= COLUMN_MASK;\n\n")?;

@@ -5,7 +5,10 @@ const EAST_ASIAN_WIDTH_COLUMN_BITS : usize = 3;
 const EAST_ASIAN_WIDTH_INDEX_LEN : usize = 4352;
 const EAST_ASIAN_WIDTH_INDEX_BITS : usize = 6;
 
-const EAST_ASIAN_WIDTH_COLUMN: [u8; 4807] = [
+const EAST_ASIAN_WIDTH_INDEX_BYTE_OFFSET : usize = 4807;
+
+const EAST_ASIAN_WIDTH_DATA: [u8; 8078] = [
+    // Column table
        0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 73,146, 36, 73,146, 36, 73,146, 36, 73,146, 36, 73,146, 36, 73,146, 36, 73,146,
       36, 73,146, 36, 73,146, 36, 73,146, 36, 73,146, 36, 73,146,  4,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 80,162, 68,130,
       16, 41,146, 36, 72,146, 32, 73,  0,  0,  8,  0,  0,  0,  2,  0, 64,  2,  0, 72, 18,  0,  8,146, 32,  1,130,  4, 64,146, 32,  8,
@@ -157,9 +160,7 @@ const EAST_ASIAN_WIDTH_COLUMN: [u8; 4807] = [
       73,146, 36, 73,146, 36, 73,146, 36, 73,146, 36, 73,146, 36, 73,146, 36, 73,146, 36, 73,146, 36, 73,146, 36, 73,146, 36, 73,146,
       36, 73,146, 36, 73,146, 36, 73,146, 36, 73,146, 36, 73,146, 36, 73,146, 36, 73,146, 36, 73,146, 36, 73,146, 36, 73,146, 36,  1,
        0,  0,  0,  0,  0,  0,  0,
-];
-
-const EAST_ASIAN_WIDTH_INDEX: [u8; 3271] = [
+    // Index table
       64, 32, 12, 68, 81, 20, 69, 81, 20, 69, 81, 20,133, 81, 20, 69, 81, 20, 69, 81, 20, 69, 81, 20,  7,146, 40, 11,211, 56,197, 83,
       64, 69, 17, 73, 19, 85, 89,150,101, 89,150,101, 89,150,101, 89,150,101, 89,150,101, 89,150,101, 89,150,101, 89,150,101, 89,150,
      101, 89,150,101, 89,150,101, 89,150,101, 89,150,101, 89,150,101, 89,150,101, 89,150,101, 89,150,101, 89,150,101, 89,150,101, 89,
@@ -299,8 +300,8 @@ pub enum EastAsianWidth {
     let index_byte_offset = index_offset / 8;
     let index_bit_offset = index_offset % 8;
     let mut index: usize = 0;
-    index |= (EAST_ASIAN_WIDTH_INDEX[index_byte_offset + 1] as usize) << 8;
-    index |= (EAST_ASIAN_WIDTH_INDEX[index_byte_offset + 0] as usize) << 0;
+    index |= (EAST_ASIAN_WIDTH_DATA[EAST_ASIAN_WIDTH_INDEX_BYTE_OFFSET + index_byte_offset + 1] as usize) << 8;
+    index |= (EAST_ASIAN_WIDTH_DATA[EAST_ASIAN_WIDTH_INDEX_BYTE_OFFSET + index_byte_offset + 0] as usize) << 0;
     index >>= index_bit_offset;
     index &= INDEX_MASK;
 
@@ -309,8 +310,8 @@ pub enum EastAsianWidth {
     let column_bit_offset = column_offset % 8;
 
     let mut value: usize = 0;
-    value |= (EAST_ASIAN_WIDTH_COLUMN[column_byte_offset + 1] as usize) << 8;
-    value |= (EAST_ASIAN_WIDTH_COLUMN[column_byte_offset + 0] as usize) << 0;
+    value |= (EAST_ASIAN_WIDTH_DATA[column_byte_offset + 1] as usize) << 8;
+    value |= (EAST_ASIAN_WIDTH_DATA[column_byte_offset + 0] as usize) << 0;
     value >>= column_bit_offset;
     value &= COLUMN_MASK;
 
