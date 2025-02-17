@@ -26,19 +26,19 @@ pub struct CodePointDescription {
     pub east_asian_width : String,
 
     // GraphemeBreakProperty.txt
-    //pub grapheme_cluster_break : String,
+    pub grapheme_break : String,
 
     // SentenceBreakProperty.txt
-    //pub sentence_break : String,
+    pub sentence_break : String,
 
     // WordBreakProperty.txt
-    //pub word_break : String,
+    pub word_break : String,
 
     // LineBreak.txt
-    //pub line_break : String,
+    pub line_break : String,
 
     // Scripts.txt
-    //pub script : String,
+    pub script : String,
 
     // emoji-data.tt
     //pub emoji : bool,

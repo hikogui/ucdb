@@ -15,15 +15,17 @@ pub enum Error {
     Parse(#[from] std::num::ParseIntError),
 }
 
-pub fn parse_east_asian_width(ucd_base_url: &str, ucd_version: &str, data_dir: &std::path::Path, descriptions : &mut Vec<CodePointDescription>)
+pub fn parse_single_column<'a>(
+    url: &str,
+    path: &std::path::Path,
+    column: &mut Vec<CodePointDescription>,
+    op : impl Fn(&mut CodePointDescription) -> &mut String
+    )
     -> Result<(), Error>
 {
-    let missing_re = Regex::new(r"^#\s*@missing:\s*([0-9a-fA-F]+)\.\.([0-9a-fA-F]+)\s*;\s*([a-zA-Z]+)").unwrap();
-    let single_re = Regex::new(r"^([0-9a-fA-F]+)\s*;\s*([a-zA-Z]+)").unwrap();
-    let range_re = Regex::new(r"^([0-9a-fA-F]+)\.\.([0-9a-fA-F]+)\s*;\s*([a-zA-Z]+)").unwrap();
-
-    let url = format!("{}/{}/ucd/EastAsianWidth.txt", &ucd_base_url, &ucd_version);
-    let path = data_dir.join(&ucd_version).join("ucd").join("EastAsianWidth.txt");
+    let missing_re = Regex::new(r"^#\s*@missing:\s*([0-9a-fA-F]+)\.\.([0-9a-fA-F]+)\s*;\s*([a-zA-Z_]+)").unwrap();
+    let single_re = Regex::new(r"^([0-9a-fA-F]+)\s*;\s*([a-zA-Z_]+)").unwrap();
+    let range_re = Regex::new(r"^([0-9a-fA-F]+)\.\.([0-9a-fA-F]+)\s*;\s*([a-zA-Z_]+)").unwrap();
 
     let file = download::download_and_open_file(&url, &path)?;
     let reader = std::io::BufReader::new(file);
@@ -36,15 +38,15 @@ pub fn parse_east_asian_width(ucd_base_url: &str, ucd_version: &str, data_dir: &
             let last_cp = usize::from_str_radix(&cap[2], 16)?;
 
             for cp in first_cp..=last_cp {
-                if descriptions[cp].east_asian_width.is_empty()  {
-                    descriptions[cp].east_asian_width = cap[3].to_string();
+                if op(&mut column[cp]).is_empty()  {
+                    *op(&mut column[cp]) = cap[3].to_string();
                 }
             }
 
         } else if let Some(cap) = single_re.captures(&line) {
             // Use integers directly, char do not allow surrogates.
             let cp = usize::from_str_radix(&cap[1], 16)?;
-            descriptions[cp].east_asian_width = cap[2].to_string();
+            *op(&mut column[cp]) = cap[2].to_string();
 
         } else if let Some(cap) = range_re.captures(&line) {
             // Use integers directly, char do not allow surrogates.
@@ -52,11 +54,12 @@ pub fn parse_east_asian_width(ucd_base_url: &str, ucd_version: &str, data_dir: &
             let last_cp = usize::from_str_radix(&cap[2], 16)?;
 
             for cp in first_cp..=last_cp {
-                descriptions[cp].east_asian_width = cap[3].to_string();
+                *op(&mut column[cp]) = cap[3].to_string();
             }
         }
     }
 
     return Ok(());
 }
+
 

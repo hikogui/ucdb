@@ -101,7 +101,7 @@ pub fn generate_enum_table(
     write!(fd, "#[derive(Debug,Clone,Copy,PartialEq)]\n")?;
     write!(fd, "pub enum {} {{\n", camel_name)?;
     for (i, v) in enum_values.iter().enumerate() {
-        write!(fd, "    {} = {},\n", v, i)?;
+        write!(fd, "    {} = {},\n", v.to_case(Case::Pascal), i)?;
     }
     write!(fd, "}}\n\n")?;
 
@@ -200,9 +200,9 @@ pub fn generate_enum_table(
 
     write!(fd, "    return match value {{\n")?;
     for (i, v) in enum_values.iter().enumerate() {
-        write!(fd, "        {} => {}::{},\n", i, camel_name, v)?;
+        write!(fd, "        {} => {}::{},\n", i, camel_name, v.to_case(Case::Pascal))?;
     }
-    write!(fd, "        _ => {}::{},\n", camel_name, enum_values[0])?;
+    write!(fd, "        _ => {}::{},\n", camel_name, enum_values[0].to_case(Case::Pascal))?;
     write!(fd, "    }};\n")?;
     write!(fd, "}}\n\n")?;
 
