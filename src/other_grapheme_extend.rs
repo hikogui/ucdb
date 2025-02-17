@@ -131,3 +131,15 @@ const OTHER_GRAPHEME_EXTEND_DATA: [u8; 2339] = [
     };
 }
 
+#[cfg(all(test, not(debug_assertions)))]
+#[test]
+fn other_grapheme_extend_full_coverage()
+{
+    for c in '\u{0000}'..='\u{d7ff}' {
+        let _ = get_other_grapheme_extend(c);
+    }
+    for c in '\u{e000}'..='\u{10ffff}' {
+        let _ = get_other_grapheme_extend(c);
+    }
+}
+

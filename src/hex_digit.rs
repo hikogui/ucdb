@@ -63,3 +63,15 @@ const HEX_DIGIT_DATA: [u8; 162] = [
     };
 }
 
+#[cfg(all(test, not(debug_assertions)))]
+#[test]
+fn hex_digit_full_coverage()
+{
+    for c in '\u{0000}'..='\u{d7ff}' {
+        let _ = get_hex_digit(c);
+    }
+    for c in '\u{e000}'..='\u{10ffff}' {
+        let _ = get_hex_digit(c);
+    }
+}
+

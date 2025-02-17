@@ -59,3 +59,15 @@ const IDS_UNARY_OPERATOR_DATA: [u8; 42] = [
     };
 }
 
+#[cfg(all(test, not(debug_assertions)))]
+#[test]
+fn ids_unary_operator_full_coverage()
+{
+    for c in '\u{0000}'..='\u{d7ff}' {
+        let _ = get_ids_unary_operator(c);
+    }
+    for c in '\u{e000}'..='\u{10ffff}' {
+        let _ = get_ids_unary_operator(c);
+    }
+}
+

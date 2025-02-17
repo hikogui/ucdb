@@ -95,3 +95,15 @@ const DEPRECATED_DATA: [u8; 1186] = [
     };
 }
 
+#[cfg(all(test, not(debug_assertions)))]
+#[test]
+fn deprecated_full_coverage()
+{
+    for c in '\u{0000}'..='\u{d7ff}' {
+        let _ = get_deprecated(c);
+    }
+    for c in '\u{e000}'..='\u{10ffff}' {
+        let _ = get_deprecated(c);
+    }
+}
+

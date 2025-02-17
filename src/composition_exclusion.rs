@@ -71,3 +71,15 @@ const COMPOSITION_EXCLUSION_DATA: [u8; 433] = [
     };
 }
 
+#[cfg(all(test, not(debug_assertions)))]
+#[test]
+fn composition_exclusion_full_coverage()
+{
+    for c in '\u{0000}'..='\u{d7ff}' {
+        let _ = get_composition_exclusion(c);
+    }
+    for c in '\u{e000}'..='\u{10ffff}' {
+        let _ = get_composition_exclusion(c);
+    }
+}
+

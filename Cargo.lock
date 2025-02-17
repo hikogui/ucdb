@@ -314,17 +314,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bf151400ff0baff5465007dd2f3e717f3fe502074ca563069ce3a6629d07b289"
 
 [[package]]
-name = "hikoru-ucdb"
-version = "0.1.0"
-dependencies = [
- "cargo_metadata",
- "convert_case",
- "regex",
- "reqwest",
- "thiserror",
-]
-
-[[package]]
 name = "http"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1269,6 +1258,17 @@ name = "try-lock"
 version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e421abadd41a4225275504ea4d6566923418b7f05506fbc9c0fe86ba7396114b"
+
+[[package]]
+name = "ucdb"
+version = "0.1.0"
+dependencies = [
+ "cargo_metadata",
+ "convert_case",
+ "regex",
+ "reqwest",
+ "thiserror",
+]
 
 [[package]]
 name = "unicode-ident"

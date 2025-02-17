@@ -66,3 +66,15 @@ const PREPENDED_CONCATENATION_MARK_DATA: [u8; 264] = [
     };
 }
 
+#[cfg(all(test, not(debug_assertions)))]
+#[test]
+fn prepended_concatenation_mark_full_coverage()
+{
+    for c in '\u{0000}'..='\u{d7ff}' {
+        let _ = get_prepended_concatenation_mark(c);
+    }
+    for c in '\u{e000}'..='\u{10ffff}' {
+        let _ = get_prepended_concatenation_mark(c);
+    }
+}
+

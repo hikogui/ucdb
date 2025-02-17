@@ -206,6 +206,18 @@ pub fn generate_enum_table(
     write!(fd, "    }};\n")?;
     write!(fd, "}}\n\n")?;
 
+    write!(fd, "#[cfg(all(test, not(debug_assertions)))]\n")?;
+    write!(fd, "#[test]\n")?;
+    write!(fd, "fn {}_full_coverage()\n", name)?;
+    write!(fd, "{{\n")?;
+    write!(fd, "    for c in '\\u{{0000}}'..='\\u{{d7ff}}' {{\n")?;
+    write!(fd, "        let _ = get_{}(c);\n", name)?;
+    write!(fd, "    }}\n")?;
+    write!(fd, "    for c in '\\u{{e000}}'..='\\u{{10ffff}}' {{\n")?;
+    write!(fd, "        let _ = get_{}(c);\n", name)?;
+    write!(fd, "    }}\n")?;
+    write!(fd, "}}\n\n")?;
+
     return Ok(());
 }
 
@@ -381,6 +393,18 @@ pub fn generate_bool_table(
     write!(fd, "        0 => false,\n")?;
     write!(fd, "        _ => true,\n")?;
     write!(fd, "    }};\n")?;
+    write!(fd, "}}\n\n")?;
+
+    write!(fd, "#[cfg(all(test, not(debug_assertions)))]\n")?;
+    write!(fd, "#[test]\n")?;
+    write!(fd, "fn {}_full_coverage()\n", name)?;
+    write!(fd, "{{\n")?;
+    write!(fd, "    for c in '\\u{{0000}}'..='\\u{{d7ff}}' {{\n")?;
+    write!(fd, "        let _ = get_{}(c);\n", name)?;
+    write!(fd, "    }}\n")?;
+    write!(fd, "    for c in '\\u{{e000}}'..='\\u{{10ffff}}' {{\n")?;
+    write!(fd, "        let _ = get_{}(c);\n", name)?;
+    write!(fd, "    }}\n")?;
     write!(fd, "}}\n\n")?;
 
     return Ok(());

@@ -59,3 +59,15 @@ const MODIFIER_COMBINING_MARK_DATA: [u8; 43] = [
     };
 }
 
+#[cfg(all(test, not(debug_assertions)))]
+#[test]
+fn modifier_combining_mark_full_coverage()
+{
+    for c in '\u{0000}'..='\u{d7ff}' {
+        let _ = get_modifier_combining_mark(c);
+    }
+    for c in '\u{e000}'..='\u{10ffff}' {
+        let _ = get_modifier_combining_mark(c);
+    }
+}
+

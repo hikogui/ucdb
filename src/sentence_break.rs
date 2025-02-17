@@ -767,3 +767,15 @@ pub enum SentenceBreak {
     };
 }
 
+#[cfg(all(test, not(debug_assertions)))]
+#[test]
+fn sentence_break_full_coverage()
+{
+    for c in '\u{0000}'..='\u{d7ff}' {
+        let _ = get_sentence_break(c);
+    }
+    for c in '\u{e000}'..='\u{10ffff}' {
+        let _ = get_sentence_break(c);
+    }
+}
+

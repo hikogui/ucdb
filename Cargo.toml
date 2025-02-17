@@ -1,5 +1,5 @@
 [package]
-name = "hikoru-ucdb"
+name = "ucdb"
 version = "0.1.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
@@ -9,6 +9,7 @@ version = "16.0.0"
 url = "https://www.unicode.org/Public"
 
 [dependencies]
+
 
 [build-dependencies]
 reqwest = { version = "0.12", features = ["blocking"] }

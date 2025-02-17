@@ -59,3 +59,15 @@ const JOIN_CONTROL_DATA: [u8; 34] = [
     };
 }
 
+#[cfg(all(test, not(debug_assertions)))]
+#[test]
+fn join_control_full_coverage()
+{
+    for c in '\u{0000}'..='\u{d7ff}' {
+        let _ = get_join_control(c);
+    }
+    for c in '\u{e000}'..='\u{10ffff}' {
+        let _ = get_join_control(c);
+    }
+}
+

@@ -62,3 +62,15 @@ const LOGICAL_ORDER_EXCEPTION_DATA: [u8; 151] = [
     };
 }
 
+#[cfg(all(test, not(debug_assertions)))]
+#[test]
+fn logical_order_exception_full_coverage()
+{
+    for c in '\u{0000}'..='\u{d7ff}' {
+        let _ = get_logical_order_exception(c);
+    }
+    for c in '\u{e000}'..='\u{10ffff}' {
+        let _ = get_logical_order_exception(c);
+    }
+}
+

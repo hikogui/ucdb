@@ -60,3 +60,15 @@ const IDS_BINARY_OPERATOR_DATA: [u8; 75] = [
     };
 }
 
+#[cfg(all(test, not(debug_assertions)))]
+#[test]
+fn ids_binary_operator_full_coverage()
+{
+    for c in '\u{0000}'..='\u{d7ff}' {
+        let _ = get_ids_binary_operator(c);
+    }
+    for c in '\u{e000}'..='\u{10ffff}' {
+        let _ = get_ids_binary_operator(c);
+    }
+}
+

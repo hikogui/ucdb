@@ -326,3 +326,15 @@ pub enum EastAsianWidth {
     };
 }
 
+#[cfg(all(test, not(debug_assertions)))]
+#[test]
+fn east_asian_width_full_coverage()
+{
+    for c in '\u{0000}'..='\u{d7ff}' {
+        let _ = get_east_asian_width(c);
+    }
+    for c in '\u{e000}'..='\u{10ffff}' {
+        let _ = get_east_asian_width(c);
+    }
+}
+

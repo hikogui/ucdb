@@ -60,3 +60,15 @@ const OTHER_ID_START_DATA: [u8; 82] = [
     };
 }
 
+#[cfg(all(test, not(debug_assertions)))]
+#[test]
+fn other_id_start_full_coverage()
+{
+    for c in '\u{0000}'..='\u{d7ff}' {
+        let _ = get_other_id_start(c);
+    }
+    for c in '\u{e000}'..='\u{10ffff}' {
+        let _ = get_other_id_start(c);
+    }
+}
+

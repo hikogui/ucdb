@@ -62,3 +62,15 @@ const WHITE_SPACE_DATA: [u8; 118] = [
     };
 }
 
+#[cfg(all(test, not(debug_assertions)))]
+#[test]
+fn white_space_full_coverage()
+{
+    for c in '\u{0000}'..='\u{d7ff}' {
+        let _ = get_white_space(c);
+    }
+    for c in '\u{e000}'..='\u{10ffff}' {
+        let _ = get_white_space(c);
+    }
+}
+

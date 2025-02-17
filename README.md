@@ -1,8 +1,14 @@
-# Hikoru Unicode Database
+# Unicode Database (UCDB)
+This is part of the HikoGUI project.
 
-This crate contains the Unicode database build into the executable.
-The Unicode database is compressed and has O(1) two-step associative lookups.
+This crate contains the Unicode Database (UCDB) which will be build directly
+into your application. It is a fast and memory efficient. It can be used for
+various purposes such as normalization, text segmentation, script detection,
+bidirectional language support, etc. 
 
+Most of the database is used for looking attributes of a code-point, it does
+this using a O(1) two-step associative lookup. The composition/decomposition
+tables are a bit more complex.
 
 ## License
 

@@ -82,3 +82,15 @@ const UNIFIED_IDEOGRAPH_DATA: [u8; 788] = [
     };
 }
 
+#[cfg(all(test, not(debug_assertions)))]
+#[test]
+fn unified_ideograph_full_coverage()
+{
+    for c in '\u{0000}'..='\u{d7ff}' {
+        let _ = get_unified_ideograph(c);
+    }
+    for c in '\u{e000}'..='\u{10ffff}' {
+        let _ = get_unified_ideograph(c);
+    }
+}
+

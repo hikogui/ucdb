@@ -104,3 +104,15 @@ const OTHER_DEFAULT_IGNORABLE_CODE_POINT_DATA: [u8; 1478] = [
     };
 }
 
+#[cfg(all(test, not(debug_assertions)))]
+#[test]
+fn other_default_ignorable_code_point_full_coverage()
+{
+    for c in '\u{0000}'..='\u{d7ff}' {
+        let _ = get_other_default_ignorable_code_point(c);
+    }
+    for c in '\u{e000}'..='\u{10ffff}' {
+        let _ = get_other_default_ignorable_code_point(c);
+    }
+}
+

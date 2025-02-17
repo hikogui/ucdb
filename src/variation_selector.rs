@@ -80,3 +80,15 @@ const VARIATION_SELECTOR_DATA: [u8; 706] = [
     };
 }
 
+#[cfg(all(test, not(debug_assertions)))]
+#[test]
+fn variation_selector_full_coverage()
+{
+    for c in '\u{0000}'..='\u{d7ff}' {
+        let _ = get_variation_selector(c);
+    }
+    for c in '\u{e000}'..='\u{10ffff}' {
+        let _ = get_variation_selector(c);
+    }
+}
+

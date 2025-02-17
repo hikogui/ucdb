@@ -60,3 +60,15 @@ const BIDI_CONTROL_DATA: [u8; 66] = [
     };
 }
 
+#[cfg(all(test, not(debug_assertions)))]
+#[test]
+fn bidi_control_full_coverage()
+{
+    for c in '\u{0000}'..='\u{d7ff}' {
+        let _ = get_bidi_control(c);
+    }
+    for c in '\u{e000}'..='\u{10ffff}' {
+        let _ = get_bidi_control(c);
+    }
+}
+

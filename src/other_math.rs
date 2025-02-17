@@ -84,3 +84,15 @@ const OTHER_MATH_DATA: [u8; 855] = [
     };
 }
 
+#[cfg(all(test, not(debug_assertions)))]
+#[test]
+fn other_math_full_coverage()
+{
+    for c in '\u{0000}'..='\u{d7ff}' {
+        let _ = get_other_math(c);
+    }
+    for c in '\u{e000}'..='\u{10ffff}' {
+        let _ = get_other_math(c);
+    }
+}
+

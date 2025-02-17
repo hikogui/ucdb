@@ -136,3 +136,15 @@ const DIACRITIC_DATA: [u8; 2507] = [
     };
 }
 
+#[cfg(all(test, not(debug_assertions)))]
+#[test]
+fn diacritic_full_coverage()
+{
+    for c in '\u{0000}'..='\u{d7ff}' {
+        let _ = get_diacritic(c);
+    }
+    for c in '\u{e000}'..='\u{10ffff}' {
+        let _ = get_diacritic(c);
+    }
+}
+

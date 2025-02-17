@@ -98,7 +98,7 @@ pub use regional_indicator::get_regional_indicator;
 pub use modifier_combining_mark::get_modifier_combining_mark;
 
 #[cfg(test)]
-mod hikoru_ucdb {
+mod tests {
     use super::*;
 
     #[test]
@@ -106,82 +106,5 @@ mod hikoru_ucdb {
     {
         assert_eq!(get_east_asian_width('a'), EastAsianWidth::Na);
         assert_eq!(get_east_asian_width('あ'), EastAsianWidth::W);
-    }
-
-    #[test]
-    fn east_asian_width_full_coverage()
-    {
-        for c in '\u{0000}'..='\u{d7ff}' {
-            let _ = get_east_asian_width(c);
-        }
-        for c in '\u{e000}'..='\u{10ffff}' {
-            let _ = get_east_asian_width(c);
-        }
-    }
-
-    #[test]
-    fn line_break_full_coverage()
-    {
-        for c in '\u{0000}'..='\u{d7ff}' {
-            let _ = get_line_break(c);
-        }
-        for c in '\u{e000}'..='\u{10ffff}' {
-            let _ = get_line_break(c);
-        }
-    }
-
-    #[test]
-    fn word_break_full_coverage()
-    {
-        for c in '\u{0000}'..='\u{d7ff}' {
-            let _ = get_word_break(c);
-        }
-        for c in '\u{e000}'..='\u{10ffff}' {
-            let _ = get_word_break(c);
-        }
-    }
-
-    #[test]
-    fn sentence_break_full_coverage()
-    {
-        for c in '\u{0000}'..='\u{d7ff}' {
-            let _ = get_sentence_break(c);
-        }
-        for c in '\u{e000}'..='\u{10ffff}' {
-            let _ = get_sentence_break(c);
-        }
-    }
-
-    #[test]
-    fn grapheme_break_full_coverage()
-    {
-        for c in '\u{0000}'..='\u{d7ff}' {
-            let _ = get_grapheme_break(c);
-        }
-        for c in '\u{e000}'..='\u{10ffff}' {
-            let _ = get_grapheme_break(c);
-        }
-    }
-
-    #[test]
-    fn script_coverage()
-    {
-        for c in '\u{0000}'..='\u{d7ff}' {
-            let _ = get_script(c);
-        }
-        for c in '\u{e000}'..='\u{10ffff}' {
-            let _ = get_script(c);
-        }
-    }
-
-    #[test]
-    fn composition_exclusion_coverage()
-    {
-        for c in '\u{0000}'..='\u{d7ff}' {
-            let _ = get_composition_exclusion(c);
-        }
-        for c in '\u{e000}'..='\u{10ffff}' {
-            let _ = get_composition_exclusion(c);
-        }
     }
 }

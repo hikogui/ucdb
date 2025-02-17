@@ -69,3 +69,15 @@ const ID_COMPAT_MATH_CONTINUE_DATA: [u8; 371] = [
     };
 }
 
+#[cfg(all(test, not(debug_assertions)))]
+#[test]
+fn id_compat_math_continue_full_coverage()
+{
+    for c in '\u{0000}'..='\u{d7ff}' {
+        let _ = get_id_compat_math_continue(c);
+    }
+    for c in '\u{e000}'..='\u{10ffff}' {
+        let _ = get_id_compat_math_continue(c);
+    }
+}
+

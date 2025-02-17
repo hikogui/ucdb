@@ -67,3 +67,15 @@ const QUOTATION_MARK_DATA: [u8; 321] = [
     };
 }
 
+#[cfg(all(test, not(debug_assertions)))]
+#[test]
+fn quotation_mark_full_coverage()
+{
+    for c in '\u{0000}'..='\u{d7ff}' {
+        let _ = get_quotation_mark(c);
+    }
+    for c in '\u{e000}'..='\u{10ffff}' {
+        let _ = get_quotation_mark(c);
+    }
+}
+

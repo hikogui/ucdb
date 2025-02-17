@@ -81,3 +81,15 @@ const SOFT_DOTTED_DATA: [u8; 754] = [
     };
 }
 
+#[cfg(all(test, not(debug_assertions)))]
+#[test]
+fn soft_dotted_full_coverage()
+{
+    for c in '\u{0000}'..='\u{d7ff}' {
+        let _ = get_soft_dotted(c);
+    }
+    for c in '\u{e000}'..='\u{10ffff}' {
+        let _ = get_soft_dotted(c);
+    }
+}
+
