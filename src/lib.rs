@@ -5,6 +5,7 @@ pub mod word_break;
 pub mod sentence_break;
 pub mod grapheme_break;
 pub mod script;
+pub mod composition_exclusion;
 
 pub use east_asian_width::EastAsianWidth;
 pub use east_asian_width::get_east_asian_width;
@@ -18,6 +19,7 @@ pub use grapheme_break::GraphemeBreak;
 pub use grapheme_break::get_grapheme_break;
 pub use script::Script;
 pub use script::get_script;
+pub use composition_exclusion::get_composition_exclusion;
 
 #[cfg(test)]
 mod hikoru_ucdb {
@@ -93,6 +95,17 @@ mod hikoru_ucdb {
         }
         for c in '\u{e000}'..='\u{10ffff}' {
             let _ = get_script(c);
+        }
+    }
+
+    #[test]
+    fn composition_exclusion_coverage()
+    {
+        for c in '\u{0000}'..='\u{d7ff}' {
+            let _ = get_composition_exclusion(c);
+        }
+        for c in '\u{e000}'..='\u{10ffff}' {
+            let _ = get_composition_exclusion(c);
         }
     }
 }

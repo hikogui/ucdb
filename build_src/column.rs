@@ -173,6 +173,22 @@ pub fn map_str_to_int<'a>(order: &mut Vec<String>, op: impl Fn(usize) -> &'a Str
     return r;
 }
 
+pub fn map_bool_to_int(op: impl Fn(usize) -> bool) -> Vec<usize>
+{
+    let mut r = Vec::<usize>::with_capacity(0x110000);
+    r.resize(0x110000, 0);
+
+    for cp in 0..0x110000 {
+        if op(cp) {
+            r[cp] = 1;
+        } else {
+            r[cp] = 0;
+        }
+    }
+
+    return r;
+}
+
 fn compress_insert_value(bytes: &mut Vec<u8>, offset : usize, mut value : usize)
 {
     let mut byte_offset = offset / 8;

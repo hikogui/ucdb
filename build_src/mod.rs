@@ -42,6 +42,29 @@ fn generate_enum_table<'a>(
     return Ok(());
 }
 
+fn generate_bool_table(
+    code_dir: &std::path::Path,
+    name: &str,
+    op: impl Fn(usize) -> bool
+) -> Result<(), Error>
+{
+    let column = column::map_bool_to_int(op);
+
+    let (dedup, dedup_bits, index, index_bits, chunk_size) = column::dedup_best_fit(&column);
+    assert!(dedup_bits == 1);
+
+    generators::generate_bool_table(
+        &code_dir,
+        name,
+        &dedup,
+        &index,
+        index_bits,
+        chunk_size,
+    )?;
+
+    return Ok(());
+}
+
 pub fn build(
     ucd_base_url: &str,
     ucd_version: &str,
@@ -93,6 +116,19 @@ pub fn build(
         |x| &mut x.script
     )?;
 
+    parsers::parse_existance_column(
+        &format!("{}/{}/ucd/CompositionExclusions.txt", &ucd_base_url, &ucd_version),
+        &data_dir.join(&ucd_version).join("ucd").join("CompositionExclusions.txt"),
+        &mut code_point_descriptions,
+        |x| &mut x.composition_exclusion
+    )?;
+
+    parsers::parse_prop_list_columns(
+        &format!("{}/{}/ucd/PropList.txt", &ucd_base_url, &ucd_version),
+        &data_dir.join(&ucd_version).join("ucd").join("PropList.txt"),
+        &mut code_point_descriptions
+    )?;
+
     generate_enum_table(code_dir, "east_asian_width", vec!["N".to_string()], |x| {
         &code_point_descriptions[x].east_asian_width
     })?;
@@ -116,6 +152,11 @@ pub fn build(
     generate_enum_table(code_dir, "script", vec!["N".to_string()], |x| {
         &code_point_descriptions[x].script
     })?;
+
+    generate_bool_table(code_dir, "composition_exclusion", |x| {
+        code_point_descriptions[x].composition_exclusion
+    })?;
+
 
     return Ok(());
 }
