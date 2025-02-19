@@ -2,11 +2,11 @@
 #[derive(Clone,Default)]
 pub struct CodePointDescription {
     // UnicodeData.txt
-    //pub bidi_class : String,
-    //pub canonical_combining_class : String,
-    //pub decomposition_type : String,
-    //pub decomposition_mapping : String,
-    //pub general_category : String,
+    pub bidi_class : String,
+    pub canonical_combining_class : u8,
+    pub decomposition_type : String,
+    pub decomposition_mapping : String,
+    pub general_category : String,
     //pub bidi_mirrored : bool,
     //pub upper_cast_mapping : String,
     //pub lower_cast_mapping : String,
@@ -90,6 +90,61 @@ pub struct CodePointDescription {
 }
 
 impl CodePointDescription {
+    pub fn default() -> Self {
+        return Self{
+            bidi_class : "ON".to_string(),
+            canonical_combining_class : 0,
+            decomposition_type : "canonical".to_string(),
+            decomposition_mapping : String::new(),
+            general_category : "Cn".to_string(),
+            composition_exclusion : false,
+            east_asian_width : String::new(),
+            grapheme_break : String::new(),
+            sentence_break : String::new(),
+            word_break : String::new(),
+            line_break : String::new(),
+            script : String::new(),
+            white_space : false,
+            bidi_control : false,
+            join_control : false,
+            dash : false,
+            hyphen : false,
+            quotation_mark : false,
+            terminal_punctuation : false,
+            other_math : false,
+            hex_digit : false,
+            ascii_hex_digit : false,
+            other_alphabetic : false,
+            ideographic : false,
+            diacritic : false,
+            extender : false,
+            other_lowercase : false,
+            other_uppercase : false,
+            noncharacter_code_point : false,
+            other_grapheme_extend : false,
+            ids_unary_operator : false,
+            ids_binary_operator : false,
+            ids_trinary_operator : false,
+            radical : false,
+            unified_ideograph : false,
+            other_default_ignorable_code_point : false,
+            deprecated : false,
+            soft_dotted : false,
+            logical_order_exception : false,
+            other_id_start : false,
+            other_id_continue : false,
+            id_compat_math_continue : false,
+            id_compat_math_start : false,
+            sentence_terminal : false,
+            variation_selector : false,
+            pattern_white_space : false,
+            pattern_syntax : false,
+            prepended_concatenation_mark : false,
+            regional_indicator : false,
+            modifier_combining_mark : false,
+        };
+    }
+
     pub fn new() -> Self {
         return Self::default();
     }

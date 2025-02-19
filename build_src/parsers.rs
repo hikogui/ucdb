@@ -18,7 +18,7 @@ pub enum Error {
 pub fn parse_single_column<'a>(
     url: &str,
     path: &std::path::Path,
-    column: &mut Vec<CodePointDescription>,
+    code_point_descriptions: &mut Vec<CodePointDescription>,
     op : impl Fn(&mut CodePointDescription) -> &mut String
     )
     -> Result<(), Error>
@@ -38,15 +38,15 @@ pub fn parse_single_column<'a>(
             let last_cp = usize::from_str_radix(&cap[2], 16)?;
 
             for cp in first_cp..=last_cp {
-                if op(&mut column[cp]).is_empty()  {
-                    *op(&mut column[cp]) = cap[3].to_string();
+                if op(&mut code_point_descriptions[cp]).is_empty()  {
+                    *op(&mut code_point_descriptions[cp]) = cap[3].to_string();
                 }
             }
 
         } else if let Some(cap) = single_re.captures(&line) {
             // Use integers directly, char do not allow surrogates.
             let cp = usize::from_str_radix(&cap[1], 16)?;
-            *op(&mut column[cp]) = cap[2].to_string();
+            *op(&mut code_point_descriptions[cp]) = cap[2].to_string();
 
         } else if let Some(cap) = range_re.captures(&line) {
             // Use integers directly, char do not allow surrogates.
@@ -54,7 +54,7 @@ pub fn parse_single_column<'a>(
             let last_cp = usize::from_str_radix(&cap[2], 16)?;
 
             for cp in first_cp..=last_cp {
-                *op(&mut column[cp]) = cap[3].to_string();
+                *op(&mut code_point_descriptions[cp]) = cap[3].to_string();
             }
         }
     }
@@ -66,7 +66,7 @@ pub fn parse_single_column<'a>(
 pub fn parse_existance_column<'a>(
     url: &str,
     path: &std::path::Path,
-    column: &mut Vec<CodePointDescription>,
+    code_point_descriptions: &mut Vec<CodePointDescription>,
     op : impl Fn(&mut CodePointDescription) -> &mut bool
     )
     -> Result<(), Error>
@@ -82,7 +82,7 @@ pub fn parse_existance_column<'a>(
         if let Some(cap) = single_re.captures(&line) {
             // Use integers directly, char do not allow surrogates.
             let cp = usize::from_str_radix(&cap[1], 16)?;
-            *op(&mut column[cp]) = true;
+            *op(&mut code_point_descriptions[cp]) = true;
 
         } else if let Some(cap) = range_re.captures(&line) {
             // Use integers directly, char do not allow surrogates.
@@ -90,7 +90,7 @@ pub fn parse_existance_column<'a>(
             let last_cp = usize::from_str_radix(&cap[2], 16)?;
 
             for cp in first_cp..=last_cp {
-                *op(&mut column[cp]) = true;
+                *op(&mut code_point_descriptions[cp]) = true;
             }
         }
     }
@@ -181,3 +181,86 @@ pub fn parse_prop_list_columns<'a>(
     return Ok(());
 }
 
+pub fn parse_unicode_data_columns<'a>(
+    url: &str,
+    path: &std::path::Path,
+    code_point_descriptions: &mut Vec<CodePointDescription>
+    )
+    -> Result<(), Error>
+{
+    // 1:code value;([0-9a-fA-F]+)
+    // -:character name;
+    // 2:general category;([a-zA-Z]+)
+    // 3:canonical combining class;([0-9]+)
+    // 4:bidirectional category;([A-Z]+)
+    // 5:character decomposition mapping;([<>a-zA-Z0-9 ]+>)?
+    // -:decimal digit value;
+    // -:digit value;
+    // -:numeric value;
+    // -:unicode 1.0 name;
+    // -:iso 10646 comment;
+    // -:uppercase mapping;
+    // -:lowercase mapping;
+    // -:titlecase mapping
+    let single_re = Regex::new(r"^([0-9a-fA-F]+);.*?;([a-zA-Z]+);([0-9]+);([A-Z]+);([<>a-zA-Z0-9 ]*);").unwrap();
+
+    let file = download::download_and_open_file(&url, &path)?;
+    let reader = std::io::BufReader::new(file);
+    let mut first_code_value_of_range : usize = 0;
+    for line_result in reader.lines() {
+        let line = line_result?;
+
+        if let Some(cap) = single_re.captures(&line) {
+            // Use integers directly, char do not allow surrogates.
+            let code_value = usize::from_str_radix(&cap[1], 16)?;
+
+            if line.contains("First>:") {
+                first_code_value_of_range = code_value;
+            }
+
+            code_point_descriptions[code_value].general_category = cap[2].to_string();
+            code_point_descriptions[code_value].canonical_combining_class = u8::from_str_radix(&cap[3], 10).unwrap();
+            code_point_descriptions[code_value].bidi_class = cap[4].to_string();
+            code_point_descriptions[code_value].decomposition_type = "canonical".to_string();
+            code_point_descriptions[code_value].decomposition_mapping = String::new();
+
+            let mut decomposition = cap[5].to_string();
+            while !decomposition.is_empty() {
+                if decomposition.starts_with("<") {
+                    let end = decomposition.find('>').unwrap();
+                    let sub = &decomposition[1..end-1];
+                    code_point_descriptions[code_value].decomposition_type = sub.to_string();
+
+                    decomposition = String::from(&decomposition[end+1..]);
+
+                } else if decomposition.starts_with(" ") {
+                    decomposition = String::from(&decomposition[1..]);
+
+                } else {
+                    let end = decomposition.find(' ').unwrap_or(decomposition.len());
+                    let sub = &decomposition[0..end];
+                    let decomposition_code_value = u32::from_str_radix(&sub, 16)?;
+                    let decomposition_cp = char::from_u32(decomposition_code_value).unwrap();
+                    code_point_descriptions[code_value].decomposition_mapping.push(decomposition_cp);
+
+                    decomposition = String::from(&decomposition[end..]);
+                }
+            }
+
+            if line.contains("Last>:") {
+                for i in first_code_value_of_range..code_value {
+                    code_point_descriptions[i].general_category = code_point_descriptions[code_value].general_category.clone();
+                    code_point_descriptions[i].canonical_combining_class = code_point_descriptions[code_value].canonical_combining_class;
+                    code_point_descriptions[i].bidi_class = code_point_descriptions[code_value].bidi_class.clone();
+                    code_point_descriptions[i].decomposition_type = code_point_descriptions[code_value].decomposition_type.clone();
+                    code_point_descriptions[i].decomposition_mapping = code_point_descriptions[code_value].decomposition_mapping.clone();
+                }
+            }
+
+        } else {
+            panic!("Expecting only lines with data: '{}'", line);
+        }
+    }
+
+    return Ok(());
+}

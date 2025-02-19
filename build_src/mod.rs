@@ -114,12 +114,20 @@ pub fn build(ucd_base_url: &str, ucd_version: &str, data_dir: &std::path::Path, 
         &mut code_point_descriptions,
     )?;
 
+    parsers::parse_unicode_data_columns(
+        &format!("{}/{}/ucd/UnicodeData.txt", &ucd_base_url, &ucd_version),
+        &data_dir.join(&ucd_version).join("ucd").join("UnicodeData.txt"),
+        &mut code_point_descriptions,
+    )?;
+
+
     generate_enum_table(code_dir, "east_asian_width", vec!["N".to_string()], |x| &code_point_descriptions[x].east_asian_width)?;
-    generate_enum_table(code_dir, "line_break", vec!["N".to_string()], |x| &code_point_descriptions[x].line_break)?;
-    generate_enum_table(code_dir, "word_break", vec!["N".to_string()], |x| &code_point_descriptions[x].word_break)?;
-    generate_enum_table(code_dir, "sentence_break", vec!["N".to_string()], |x| &code_point_descriptions[x].sentence_break)?;
-    generate_enum_table(code_dir, "grapheme_break", vec!["N".to_string()], |x| &code_point_descriptions[x].grapheme_break)?;
-    generate_enum_table(code_dir, "script", vec!["N".to_string()], |x| &code_point_descriptions[x].script)?;
+    generate_enum_table(code_dir, "line_break", vec!["XX".to_string()], |x| &code_point_descriptions[x].line_break)?;
+    generate_enum_table(code_dir, "word_break", vec!["Other".to_string()], |x| &code_point_descriptions[x].word_break)?;
+    generate_enum_table(code_dir, "sentence_break", vec!["Other".to_string()], |x| &code_point_descriptions[x].sentence_break)?;
+    generate_enum_table(code_dir, "grapheme_break", vec!["Other".to_string()], |x| &code_point_descriptions[x].grapheme_break)?;
+    generate_enum_table(code_dir, "script", vec!["Unknown".to_string()], |x| &code_point_descriptions[x].script)?;
+    generate_enum_table(code_dir, "general_category", vec!["Cn".to_string()], |x| &code_point_descriptions[x].general_category)?;
 
     generate_bool_table(code_dir, "composition_exclusion", |x| code_point_descriptions[x].composition_exclusion)?;
     generate_bool_table(code_dir, "white_space", |x| code_point_descriptions[x].white_space)?;
