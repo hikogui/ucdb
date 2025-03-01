@@ -8,9 +8,9 @@ pub struct CodePointDescription {
     pub decomposition_mapping : String,
     pub general_category : String,
     //pub bidi_mirrored : bool,
-    //pub upper_cast_mapping : String,
-    //pub lower_cast_mapping : String,
-    //pub title_cast_mapping : String,
+    pub upper_case_mapping : Option<char>,
+    pub lower_case_mapping : Option<char>,
+    pub title_case_mapping : Option<char>,
 
     // BidiBrackets.txt
     //pub bidi_paired_bracket_type : String,
@@ -97,6 +97,9 @@ impl CodePointDescription {
             decomposition_type : "canonical".to_string(),
             decomposition_mapping : String::new(),
             general_category : "Cn".to_string(),
+            lower_case_mapping : Option::None,
+            upper_case_mapping : Option::None,
+            title_case_mapping : Option::None,
             composition_exclusion : false,
             east_asian_width : String::new(),
             grapheme_break : String::new(),

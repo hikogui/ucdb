@@ -1,6 +1,6 @@
 
 
-
+use crate::build_src::CodePointDescription;
 
 
 /// Copy a chunk from the source-chunk to the destination-chunk.
@@ -11,7 +11,7 @@
 ///  - `src_chunk`: The index to the chunk where the data will be copied from.
 ///  - `chunk_size`: The size of the chunks.
 ///
-fn copy_chunk(src: &Vec<usize>, src_chunk: usize, dst: &mut Vec<usize>, dst_chunk: usize, chunk_size: usize)
+fn copy_chunk(src: &Vec<u32>, src_chunk: usize, dst: &mut Vec<u32>, dst_chunk: usize, chunk_size: usize)
 {
     let dst_offset = dst_chunk * chunk_size;
     let src_offset = src_chunk * chunk_size;
@@ -26,7 +26,7 @@ fn copy_chunk(src: &Vec<usize>, src_chunk: usize, dst: &mut Vec<usize>, dst_chun
     }
 }
 
-fn test_chunk(src: &Vec<usize>, src_chunk: usize, dst: &Vec<usize>, dst_chunk: usize, chunk_size: usize) -> bool
+fn test_chunk(src: &Vec<u32>, src_chunk: usize, dst: &Vec<u32>, dst_chunk: usize, chunk_size: usize) -> bool
 {
     let src_offset = src_chunk * chunk_size;
     let dst_offset = dst_chunk * chunk_size;
@@ -58,7 +58,7 @@ fn test_chunk(src: &Vec<usize>, src_chunk: usize, dst: &Vec<usize>, dst_chunk: u
 /// The `dst_chunk` is returned so that you can directly copy the source-chunk
 /// to the correct position.
 /// 
-fn test_chunks(src: &Vec<usize>, src_chunk: usize, dst: &Vec<usize>, dst_chunk: usize, chunk_size: usize) -> usize
+fn test_chunks(src: &Vec<u32>, src_chunk: usize, dst: &Vec<u32>, dst_chunk: usize, chunk_size: usize) -> usize
 {
     for i in 0..dst_chunk {
         if test_chunk(src, src_chunk, dst, i, chunk_size) {
@@ -82,17 +82,17 @@ fn test_chunks(src: &Vec<usize>, src_chunk: usize, dst: &Vec<usize>, dst_chunk: 
 ///  - `offset = index_table[chunk_nr] * chunk_size + i % chunk_size`
 ///  - `entry = column[offset]`
 /// 
-pub fn dedup(column: &Vec<usize>, chunk_size: usize) -> (Vec<usize>, Vec<usize>)
+pub fn dedup(column: &Vec<u32>, chunk_size: usize) -> (Vec<u32>, Vec<u32>)
 {
     let num_chunks = 0x110000 / chunk_size;
-    let mut index_table = Vec::<usize>::new();
-    let mut dedup_table = Vec::<usize>::new();
+    let mut index_table = Vec::<u32>::new();
+    let mut dedup_table = Vec::<u32>::new();
 
     // Deduplicating the column table and create an index table.
     let mut dst_chunk = 0;
     for src_chunk in 0..num_chunks {
         let found_chunk = test_chunks(column, src_chunk, &dedup_table, dst_chunk, chunk_size);
-        index_table.push(found_chunk);
+        index_table.push(found_chunk as u32);
         if found_chunk == dst_chunk {
             copy_chunk(column, src_chunk, &mut dedup_table, dst_chunk, chunk_size);
             dst_chunk += 1;
@@ -119,7 +119,7 @@ pub fn dedup(column: &Vec<usize>, chunk_size: usize) -> (Vec<usize>, Vec<usize>)
     return (dedup_table, index_table);
 }
 
-pub fn dedup_best_fit(column: &Vec<usize>) -> (Vec<usize>, usize, Vec<usize>, usize, usize)
+pub fn dedup_best_fit(column: &Vec<u32>) -> (Vec<u32>, usize, Vec<u32>, usize, usize)
 {
     let chunk_sizes = vec![
         32 as usize,
@@ -130,8 +130,8 @@ pub fn dedup_best_fit(column: &Vec<usize>) -> (Vec<usize>, usize, Vec<usize>, us
     ];
 
     let mut best_chunk_size: usize = 0;
-    let mut best_dedup = Vec::<usize>::new();
-    let mut best_index = Vec::<usize>::new();
+    let mut best_dedup = Vec::<u32>::new();
+    let mut best_index = Vec::<u32>::new();
     let mut best_dedup_bits: usize = 0;
     let mut best_index_bits: usize = 0;
     let mut best_byte_len: usize = 0;
@@ -154,18 +154,18 @@ pub fn dedup_best_fit(column: &Vec<usize>) -> (Vec<usize>, usize, Vec<usize>, us
     return (best_dedup, best_dedup_bits, best_index, best_index_bits, best_chunk_size);
 }
 
-pub fn map_str_to_int<'a>(order: &mut Vec<String>, op: impl Fn(usize) -> &'a String) -> Vec<usize>
+pub fn map_str_to_int<'a>(order: &mut Vec<String>, descriptions: &'a Vec<CodePointDescription>, op: impl Fn(&'a CodePointDescription) -> &'a String) -> Vec<u32>
 {
-    let mut r = Vec::<usize>::with_capacity(0x110000);
+    let mut r = Vec::<u32>::with_capacity(0x110000);
     r.resize(0x110000, 0);
 
     for cp in 0..0x110000 {
-        let str_val = op(cp);
+        let str_val = op(&descriptions[cp]);
 
         if let Some(x) = order.iter().position(|x| x == str_val) {
-            r[cp] = x;
+            r[cp] = x as u32;
         } else {
-            r[cp] = order.len();
+            r[cp] = order.len() as u32;
             order.push(str_val.to_string()); 
         }
     }
@@ -173,13 +173,30 @@ pub fn map_str_to_int<'a>(order: &mut Vec<String>, op: impl Fn(usize) -> &'a Str
     return r;
 }
 
-pub fn map_bool_to_int(op: impl Fn(usize) -> bool) -> Vec<usize>
+pub fn map_char_to_int<'a>(descriptions: &'a Vec<CodePointDescription>, op: impl Fn(&'a CodePointDescription) -> &'a Option<char>) -> Vec<u32>
 {
-    let mut r = Vec::<usize>::with_capacity(0x110000);
+    let mut r = Vec::<u32>::with_capacity(0x110000);
     r.resize(0x110000, 0);
 
     for cp in 0..0x110000 {
-        if op(cp) {
+        if let Some(c) = op(&descriptions[cp]) {
+            assert!(*c != '\0');
+            r[cp] = *c as u32;
+        } else {
+            r[cp] = 0;
+        }
+    }
+
+    return r;
+}
+
+pub fn map_bool_to_int<'a>(descriptions: &'a Vec<CodePointDescription>, op: impl Fn(&'a CodePointDescription) -> bool) -> Vec<u32>
+{
+    let mut r = Vec::<u32>::with_capacity(0x110000);
+    r.resize(0x110000, 0);
+
+    for cp in 0..0x110000 {
+        if op(&descriptions[cp]) {
             r[cp] = 1;
         } else {
             r[cp] = 0;
@@ -189,7 +206,7 @@ pub fn map_bool_to_int(op: impl Fn(usize) -> bool) -> Vec<usize>
     return r;
 }
 
-fn compress_insert_value(bytes: &mut Vec<u8>, offset : usize, mut value : usize)
+fn compress_insert_value(bytes: &mut Vec<u8>, offset : usize, mut value : u32)
 {
     let mut byte_offset = offset / 8;
     let bit_offset = offset % 8;
@@ -204,7 +221,7 @@ fn compress_insert_value(bytes: &mut Vec<u8>, offset : usize, mut value : usize)
 
 /// Compress and integer tables into tightly packed bytes.
 ///
-pub fn compress(input: &Vec<usize>, num_bits: usize) -> Vec<u8>
+pub fn compress(input: &Vec<u32>, num_bits: usize) -> Vec<u8>
 {
     let total_num_bits = num_bits * input.len();
     let total_num_bytes = (total_num_bits + 7) / 8;
@@ -221,8 +238,9 @@ pub fn compress(input: &Vec<usize>, num_bits: usize) -> Vec<u8>
     return r;
 }
 
-pub fn get_width(input: &Vec<usize>) -> usize
+pub fn get_width(input: &Vec<u32>) -> usize
 {
     let max = *input.iter().max().unwrap_or(&0);
     return (max + 1).next_power_of_two().trailing_zeros() as usize;
 }
+

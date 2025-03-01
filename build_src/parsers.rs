@@ -199,10 +199,10 @@ pub fn parse_unicode_data_columns<'a>(
     // -:numeric value;
     // -:unicode 1.0 name;
     // -:iso 10646 comment;
-    // -:uppercase mapping;
-    // -:lowercase mapping;
-    // -:titlecase mapping
-    let single_re = Regex::new(r"^([0-9a-fA-F]+);.*?;([a-zA-Z]+);([0-9]+);([A-Z]+);([<>a-zA-Z0-9 ]*);").unwrap();
+    // 6:uppercase mapping;
+    // 7:lowercase mapping;
+    // 8:titlecase mapping
+    let single_re = Regex::new(r"^([0-9a-fA-F]+);.*?;([a-zA-Z]+);([0-9]+);([A-Z]+);([<>a-zA-Z0-9 ]*);.*?;.*?;.*?;.*?;.*?;([0-9a-fA-F]*);([0-9a-fA-F]*);([0-9a-fA-F]*)").unwrap();
 
     let file = download::download_and_open_file(&url, &path)?;
     let reader = std::io::BufReader::new(file);
@@ -223,6 +223,22 @@ pub fn parse_unicode_data_columns<'a>(
             code_point_descriptions[code_value].bidi_class = cap[4].to_string();
             code_point_descriptions[code_value].decomposition_type = "canonical".to_string();
             code_point_descriptions[code_value].decomposition_mapping = String::new();
+
+            if &cap[6] != "" {
+                let v = u32::from_str_radix(&cap[6], 16)?;
+                let c = char::from_u32(v).unwrap();
+                code_point_descriptions[code_value].upper_case_mapping = Some(c);
+            }
+            if &cap[7] != "" {
+                let v = u32::from_str_radix(&cap[7], 16)?;
+                let c = char::from_u32(v).unwrap();
+                code_point_descriptions[code_value].lower_case_mapping = Some(c);
+            }
+            if &cap[8] != "" {
+                let v = u32::from_str_radix(&cap[8], 16)?;
+                let c = char::from_u32(v).unwrap();
+                code_point_descriptions[code_value].title_case_mapping = Some(c);
+            }
 
             let mut decomposition = cap[5].to_string();
             while !decomposition.is_empty() {
