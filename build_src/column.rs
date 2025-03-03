@@ -182,6 +182,7 @@ pub fn map_char_to_int<'a>(descriptions: &'a Vec<CodePointDescription>, op: impl
         if let Some(c) = op(&descriptions[cp]) {
             assert!(*c != '\0');
             r[cp] = *c as u32;
+            assert!(r[cp] != 0x1ffff);
         } else {
             r[cp] = 0;
         }

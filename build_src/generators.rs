@@ -422,7 +422,7 @@ pub fn generate_char_table(
     let upper_name = name.to_case(Case::Constant);
     let camel_name = name.to_case(Case::Pascal);
 
-    let column_bytes = column::compress(column, 1);
+    let column_bytes = column::compress(column, column_bits);
     let index_bytes = column::compress(index, index_bits);
 
     // These are the number of bytes to read to read a value in a single read instruction.
@@ -508,7 +508,7 @@ pub fn generate_char_table(
     write!(fd, "/// bool value\n")?;
     write!(
         fd,
-        "#[must_use] pub const fn get_{}(code_point: char) -> Optional<char>\n",
+        "#[must_use] pub const fn get_{}(code_point: char) -> Option<char>\n",
         name
     )?;
     write!(fd, "{{\n")?;

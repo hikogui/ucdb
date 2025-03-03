@@ -44,6 +44,9 @@ pub mod pattern_syntax;
 pub mod prepended_concatenation_mark;
 pub mod regional_indicator;
 pub mod modifier_combining_mark;
+pub mod lower_case_mapping;
+pub mod upper_case_mapping;
+pub mod title_case_mapping;
 
 pub use east_asian_width::EastAsianWidth;
 pub use east_asian_width::get_east_asian_width;
@@ -96,6 +99,9 @@ pub use pattern_syntax::get_pattern_syntax;
 pub use prepended_concatenation_mark::get_prepended_concatenation_mark;
 pub use regional_indicator::get_regional_indicator;
 pub use modifier_combining_mark::get_modifier_combining_mark;
+pub use lower_case_mapping::get_lower_case_mapping;
+pub use upper_case_mapping::get_upper_case_mapping;
+pub use title_case_mapping::get_title_case_mapping;
 
 #[cfg(test)]
 mod tests {
@@ -106,5 +112,11 @@ mod tests {
     {
         assert_eq!(get_east_asian_width('a'), EastAsianWidth::Na);
         assert_eq!(get_east_asian_width('あ'), EastAsianWidth::W);
+    }
+
+    #[test]
+    fn lower_case_mapping()
+    {
+        assert_eq!(get_lower_case_mapping('B'), Some('b'));
     }
 }

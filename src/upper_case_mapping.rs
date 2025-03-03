@@ -5,12 +5,10 @@ const UPPER_CASE_MAPPING_COLUMN_BITS : usize = 0;
 const UPPER_CASE_MAPPING_INDEX_LEN : usize = 1;
 const UPPER_CASE_MAPPING_INDEX_BITS : usize = 0;
 
-const UPPER_CASE_MAPPING_INDEX_BYTE_OFFSET : usize = 64;
+const UPPER_CASE_MAPPING_INDEX_BYTE_OFFSET : usize = 0;
 
-const UPPER_CASE_MAPPING_DATA: [u8; 64] = [
+const UPPER_CASE_MAPPING_DATA: [u8; 0] = [
     // Column table
-      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     // Index table
     // Padding to handle unaligned word reads.
     
@@ -23,7 +21,7 @@ const UPPER_CASE_MAPPING_DATA: [u8; 64] = [
 ///
 /// # Returns
 /// bool value
-#[must_use] pub const fn get_upper_case_mapping(code_point: char) -> Optional<char>
+#[must_use] pub const fn get_upper_case_mapping(code_point: char) -> Option<char>
 {
     const INDEX_MASK : usize = (1 << UPPER_CASE_MAPPING_INDEX_BITS) - 1;
     const COLUMN_MASK : usize = (1 << UPPER_CASE_MAPPING_COLUMN_BITS) - 1;

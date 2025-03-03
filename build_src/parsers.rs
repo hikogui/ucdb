@@ -18,7 +18,7 @@ pub enum Error {
 pub fn parse_single_column<'a>(
     url: &str,
     path: &std::path::Path,
-    code_point_descriptions: &mut Vec<CodePointDescription>,
+    descriptions: &mut Vec<CodePointDescription>,
     op : impl Fn(&mut CodePointDescription) -> &mut String
     )
     -> Result<(), Error>
@@ -38,15 +38,15 @@ pub fn parse_single_column<'a>(
             let last_cp = usize::from_str_radix(&cap[2], 16)?;
 
             for cp in first_cp..=last_cp {
-                if op(&mut code_point_descriptions[cp]).is_empty()  {
-                    *op(&mut code_point_descriptions[cp]) = cap[3].to_string();
+                if op(&mut descriptions[cp]).is_empty()  {
+                    *op(&mut descriptions[cp]) = cap[3].to_string();
                 }
             }
 
         } else if let Some(cap) = single_re.captures(&line) {
             // Use integers directly, char do not allow surrogates.
             let cp = usize::from_str_radix(&cap[1], 16)?;
-            *op(&mut code_point_descriptions[cp]) = cap[2].to_string();
+            *op(&mut descriptions[cp]) = cap[2].to_string();
 
         } else if let Some(cap) = range_re.captures(&line) {
             // Use integers directly, char do not allow surrogates.
@@ -54,7 +54,7 @@ pub fn parse_single_column<'a>(
             let last_cp = usize::from_str_radix(&cap[2], 16)?;
 
             for cp in first_cp..=last_cp {
-                *op(&mut code_point_descriptions[cp]) = cap[3].to_string();
+                *op(&mut descriptions[cp]) = cap[3].to_string();
             }
         }
     }
@@ -66,7 +66,7 @@ pub fn parse_single_column<'a>(
 pub fn parse_existance_column<'a>(
     url: &str,
     path: &std::path::Path,
-    code_point_descriptions: &mut Vec<CodePointDescription>,
+    descriptions: &mut Vec<CodePointDescription>,
     op : impl Fn(&mut CodePointDescription) -> &mut bool
     )
     -> Result<(), Error>
@@ -82,7 +82,7 @@ pub fn parse_existance_column<'a>(
         if let Some(cap) = single_re.captures(&line) {
             // Use integers directly, char do not allow surrogates.
             let cp = usize::from_str_radix(&cap[1], 16)?;
-            *op(&mut code_point_descriptions[cp]) = true;
+            *op(&mut descriptions[cp]) = true;
 
         } else if let Some(cap) = range_re.captures(&line) {
             // Use integers directly, char do not allow surrogates.
@@ -90,7 +90,7 @@ pub fn parse_existance_column<'a>(
             let last_cp = usize::from_str_radix(&cap[2], 16)?;
 
             for cp in first_cp..=last_cp {
-                *op(&mut code_point_descriptions[cp]) = true;
+                *op(&mut descriptions[cp]) = true;
             }
         }
     }
@@ -101,7 +101,7 @@ pub fn parse_existance_column<'a>(
 pub fn parse_prop_list_columns<'a>(
     url: &str,
     path: &std::path::Path,
-    code_point_descriptions: &mut Vec<CodePointDescription>
+    descriptions: &mut Vec<CodePointDescription>
     )
     -> Result<(), Error>
 {
@@ -135,44 +135,44 @@ pub fn parse_prop_list_columns<'a>(
 
         for cp in first_cp..=last_cp {
             match property_name.as_str() {
-                "White_Space" => code_point_descriptions[cp].white_space = true,
-                "Bidi_Control" => code_point_descriptions[cp].bidi_control = true,
-                "Join_Control" => code_point_descriptions[cp].join_control = true,
-                "Dash" => code_point_descriptions[cp].dash = true,
-                "Hyphen" => code_point_descriptions[cp].hyphen = true,
-                "Quotation_Mark" => code_point_descriptions[cp].quotation_mark = true,
-                "Terminal_Punctuation" => code_point_descriptions[cp].terminal_punctuation = true,
-                "Other_Math" => code_point_descriptions[cp].other_math = true,
-                "Hex_Digit" => code_point_descriptions[cp].hex_digit = true,
-                "ASCII_Hex_Digit" => code_point_descriptions[cp].ascii_hex_digit = true,
-                "Other_Alphabetic" => code_point_descriptions[cp].other_alphabetic = true,
-                "Ideographic" => code_point_descriptions[cp].ideographic = true,
-                "Diacritic" => code_point_descriptions[cp].diacritic = true,
-                "Extender" => code_point_descriptions[cp].extender = true,
-                "Other_Lowercase" => code_point_descriptions[cp].other_lowercase = true,
-                "Other_Uppercase" => code_point_descriptions[cp].other_uppercase = true,
-                "Noncharacter_Code_Point" => code_point_descriptions[cp].noncharacter_code_point = true,
-                "Other_Grapheme_Extend" => code_point_descriptions[cp].other_grapheme_extend = true,
-                "IDS_Unary_Operator" => code_point_descriptions[cp].ids_unary_operator = true,
-                "IDS_Binary_Operator" => code_point_descriptions[cp].ids_binary_operator = true,
-                "IDS_Trinary_Operator" => code_point_descriptions[cp].ids_trinary_operator = true,
-                "Radical" => code_point_descriptions[cp].radical = true,
-                "Unified_Ideograph" => code_point_descriptions[cp].unified_ideograph = true,
-                "Other_Default_Ignorable_Code_Point" => code_point_descriptions[cp].other_default_ignorable_code_point = true,
-                "Deprecated" => code_point_descriptions[cp].deprecated = true,
-                "Soft_Dotted" => code_point_descriptions[cp].soft_dotted = true,
-                "Logical_Order_Exception" => code_point_descriptions[cp].logical_order_exception = true,
-                "Other_ID_Start" => code_point_descriptions[cp].other_id_start = true,
-                "Other_ID_Continue" => code_point_descriptions[cp].other_id_continue = true,
-                "ID_Compat_Math_Continue" => code_point_descriptions[cp].id_compat_math_continue = true,
-                "ID_Compat_Math_Start" => code_point_descriptions[cp].id_compat_math_start = true,
-                "Sentence_Terminal" => code_point_descriptions[cp].sentence_terminal = true,
-                "Variation_Selector" => code_point_descriptions[cp].variation_selector = true,
-                "Pattern_White_Space" => code_point_descriptions[cp].pattern_white_space = true,
-                "Pattern_Syntax" => code_point_descriptions[cp].pattern_syntax = true,
-                "Prepended_Concatenation_Mark" => code_point_descriptions[cp].prepended_concatenation_mark = true,
-                "Regional_Indicator" => code_point_descriptions[cp].regional_indicator = true,
-                "Modifier_Combining_Mark" => code_point_descriptions[cp].modifier_combining_mark = true,
+                "White_Space" => descriptions[cp].white_space = true,
+                "Bidi_Control" => descriptions[cp].bidi_control = true,
+                "Join_Control" => descriptions[cp].join_control = true,
+                "Dash" => descriptions[cp].dash = true,
+                "Hyphen" => descriptions[cp].hyphen = true,
+                "Quotation_Mark" => descriptions[cp].quotation_mark = true,
+                "Terminal_Punctuation" => descriptions[cp].terminal_punctuation = true,
+                "Other_Math" => descriptions[cp].other_math = true,
+                "Hex_Digit" => descriptions[cp].hex_digit = true,
+                "ASCII_Hex_Digit" => descriptions[cp].ascii_hex_digit = true,
+                "Other_Alphabetic" => descriptions[cp].other_alphabetic = true,
+                "Ideographic" => descriptions[cp].ideographic = true,
+                "Diacritic" => descriptions[cp].diacritic = true,
+                "Extender" => descriptions[cp].extender = true,
+                "Other_Lowercase" => descriptions[cp].other_lowercase = true,
+                "Other_Uppercase" => descriptions[cp].other_uppercase = true,
+                "Noncharacter_Code_Point" => descriptions[cp].noncharacter_code_point = true,
+                "Other_Grapheme_Extend" => descriptions[cp].other_grapheme_extend = true,
+                "IDS_Unary_Operator" => descriptions[cp].ids_unary_operator = true,
+                "IDS_Binary_Operator" => descriptions[cp].ids_binary_operator = true,
+                "IDS_Trinary_Operator" => descriptions[cp].ids_trinary_operator = true,
+                "Radical" => descriptions[cp].radical = true,
+                "Unified_Ideograph" => descriptions[cp].unified_ideograph = true,
+                "Other_Default_Ignorable_Code_Point" => descriptions[cp].other_default_ignorable_code_point = true,
+                "Deprecated" => descriptions[cp].deprecated = true,
+                "Soft_Dotted" => descriptions[cp].soft_dotted = true,
+                "Logical_Order_Exception" => descriptions[cp].logical_order_exception = true,
+                "Other_ID_Start" => descriptions[cp].other_id_start = true,
+                "Other_ID_Continue" => descriptions[cp].other_id_continue = true,
+                "ID_Compat_Math_Continue" => descriptions[cp].id_compat_math_continue = true,
+                "ID_Compat_Math_Start" => descriptions[cp].id_compat_math_start = true,
+                "Sentence_Terminal" => descriptions[cp].sentence_terminal = true,
+                "Variation_Selector" => descriptions[cp].variation_selector = true,
+                "Pattern_White_Space" => descriptions[cp].pattern_white_space = true,
+                "Pattern_Syntax" => descriptions[cp].pattern_syntax = true,
+                "Prepended_Concatenation_Mark" => descriptions[cp].prepended_concatenation_mark = true,
+                "Regional_Indicator" => descriptions[cp].regional_indicator = true,
+                "Modifier_Combining_Mark" => descriptions[cp].modifier_combining_mark = true,
                 _ => panic!("Unknown property {}", property_name),
             }
         }
@@ -184,7 +184,7 @@ pub fn parse_prop_list_columns<'a>(
 pub fn parse_unicode_data_columns<'a>(
     url: &str,
     path: &std::path::Path,
-    code_point_descriptions: &mut Vec<CodePointDescription>
+    descriptions: &mut Vec<CodePointDescription>
     )
     -> Result<(), Error>
 {
@@ -218,26 +218,26 @@ pub fn parse_unicode_data_columns<'a>(
                 first_code_value_of_range = code_value;
             }
 
-            code_point_descriptions[code_value].general_category = cap[2].to_string();
-            code_point_descriptions[code_value].canonical_combining_class = u8::from_str_radix(&cap[3], 10).unwrap();
-            code_point_descriptions[code_value].bidi_class = cap[4].to_string();
-            code_point_descriptions[code_value].decomposition_type = "canonical".to_string();
-            code_point_descriptions[code_value].decomposition_mapping = String::new();
+            descriptions[code_value].general_category = cap[2].to_string();
+            descriptions[code_value].canonical_combining_class = u8::from_str_radix(&cap[3], 10).unwrap();
+            descriptions[code_value].bidi_class = cap[4].to_string();
+            descriptions[code_value].decomposition_type = "canonical".to_string();
+            descriptions[code_value].decomposition_mapping = String::new();
 
             if &cap[6] != "" {
                 let v = u32::from_str_radix(&cap[6], 16)?;
                 let c = char::from_u32(v).unwrap();
-                code_point_descriptions[code_value].upper_case_mapping = Some(c);
+                descriptions[code_value].upper_case_mapping = Some(c);
             }
             if &cap[7] != "" {
                 let v = u32::from_str_radix(&cap[7], 16)?;
                 let c = char::from_u32(v).unwrap();
-                code_point_descriptions[code_value].lower_case_mapping = Some(c);
+                descriptions[code_value].lower_case_mapping = Some(c);
             }
             if &cap[8] != "" {
                 let v = u32::from_str_radix(&cap[8], 16)?;
                 let c = char::from_u32(v).unwrap();
-                code_point_descriptions[code_value].title_case_mapping = Some(c);
+                descriptions[code_value].title_case_mapping = Some(c);
             }
 
             let mut decomposition = cap[5].to_string();
@@ -245,7 +245,7 @@ pub fn parse_unicode_data_columns<'a>(
                 if decomposition.starts_with("<") {
                     let end = decomposition.find('>').unwrap();
                     let sub = &decomposition[1..end-1];
-                    code_point_descriptions[code_value].decomposition_type = sub.to_string();
+                    descriptions[code_value].decomposition_type = sub.to_string();
 
                     decomposition = String::from(&decomposition[end+1..]);
 
@@ -257,7 +257,7 @@ pub fn parse_unicode_data_columns<'a>(
                     let sub = &decomposition[0..end];
                     let decomposition_code_value = u32::from_str_radix(&sub, 16)?;
                     let decomposition_cp = char::from_u32(decomposition_code_value).unwrap();
-                    code_point_descriptions[code_value].decomposition_mapping.push(decomposition_cp);
+                    descriptions[code_value].decomposition_mapping.push(decomposition_cp);
 
                     decomposition = String::from(&decomposition[end..]);
                 }
@@ -265,11 +265,11 @@ pub fn parse_unicode_data_columns<'a>(
 
             if line.contains("Last>:") {
                 for i in first_code_value_of_range..code_value {
-                    code_point_descriptions[i].general_category = code_point_descriptions[code_value].general_category.clone();
-                    code_point_descriptions[i].canonical_combining_class = code_point_descriptions[code_value].canonical_combining_class;
-                    code_point_descriptions[i].bidi_class = code_point_descriptions[code_value].bidi_class.clone();
-                    code_point_descriptions[i].decomposition_type = code_point_descriptions[code_value].decomposition_type.clone();
-                    code_point_descriptions[i].decomposition_mapping = code_point_descriptions[code_value].decomposition_mapping.clone();
+                    descriptions[i].general_category = descriptions[code_value].general_category.clone();
+                    descriptions[i].canonical_combining_class = descriptions[code_value].canonical_combining_class;
+                    descriptions[i].bidi_class = descriptions[code_value].bidi_class.clone();
+                    descriptions[i].decomposition_type = descriptions[code_value].decomposition_type.clone();
+                    descriptions[i].decomposition_mapping = descriptions[code_value].decomposition_mapping.clone();
                 }
             }
 
