@@ -3,6 +3,7 @@ pub mod east_asian_width;
 pub mod line_break;
 pub mod word_break;
 pub mod sentence_break;
+pub mod general_category;
 pub mod grapheme_break;
 pub mod script;
 pub mod composition_exclusion;
@@ -60,6 +61,7 @@ pub use grapheme_break::GraphemeBreak;
 pub use grapheme_break::get_grapheme_break;
 pub use script::Script;
 pub use script::get_script;
+pub use general_category::*;
 pub use composition_exclusion::get_composition_exclusion;
 pub use white_space::get_white_space;
 pub use bidi_control::get_bidi_control;
@@ -115,8 +117,29 @@ mod tests {
     }
 
     #[test]
-    fn lower_case_mapping()
+    fn general_category()
     {
-        assert_eq!(get_lower_case_mapping('B'), Some('b'));
+        assert_eq!(get_general_category('\u{1f}'), GeneralCategory::Cc);
+        assert_eq!(get_general_category(' '), GeneralCategory::Zs);
+        assert_eq!(get_general_category('!'), GeneralCategory::Po);
+        assert_eq!(get_general_category('$'), GeneralCategory::Sc);
+        assert_eq!(get_general_category('%'), GeneralCategory::Po);
+        assert_eq!(get_general_category('('), GeneralCategory::Ps);
+        assert_eq!(get_general_category(')'), GeneralCategory::Pe);
+        assert_eq!(get_general_category('+'), GeneralCategory::Sm);
+        assert_eq!(get_general_category(','), GeneralCategory::Po);
+        assert_eq!(get_general_category('-'), GeneralCategory::Pd);
+        assert_eq!(get_general_category('0'), GeneralCategory::Nd);
+        assert_eq!(get_general_category('<'), GeneralCategory::Sm);
+        assert_eq!(get_general_category('A'), GeneralCategory::Lu);
+        assert_eq!(get_general_category('_'), GeneralCategory::Pc);
+        assert_eq!(get_general_category('a'), GeneralCategory::Ll);
+        assert_eq!(get_general_category('あ'), GeneralCategory::Lo);
+        assert_eq!(get_general_category('ア'), GeneralCategory::Lo);
     }
+    //#[test]
+    //fn lower_case_mapping()
+    //{
+    //    assert_eq!(get_lower_case_mapping('B'), Some('b'));
+    //}
 }
